@@ -1,0 +1,80 @@
+{
+  "issues": [
+    {
+      "id": 1,
+      "title": "Unable to find tag number 69066. Unable to void a pick or ship",
+      "author": "Jake Robertson",
+      "tier_2_tech": "Neil Jensen",
+      "request_date": 1525079649,
+      "version": 17.11,
+      "company": "TemperPack",
+      "resolved": "false",
+      "claimed": "true"
+    },
+    {
+      "id": 2,
+      "title": "Admin password reset",
+      "author": "Lawrence Beard",
+      "tier_2_tech": "Chade Miller",
+      "request_date": 1525079700,
+      "version": 18.3,
+      "company": "SO Logistics",
+      "resolved": "false",
+      "claimed": "false"
+    },
+    {
+      "id": 3,
+      "title": "Line Item Entered Server Ship Error",
+      "author": "Travis Polatis",
+      "tier_2_tech": "Peter Alger",
+      "request_date": 1525079800,
+      "version": 17.13,
+      "company": "Mothers Brewing",
+      "resolved": "false",
+      "claimed": "false"
+    },
+    {
+      "id": 4,
+      "title": "Module option not saving-'show CVV code'",
+      "author": "Aaren Colemere",
+      "tier_2_tech": "Peter Alger",
+      "request_date": 1525079900,
+      "version": 18.4,
+      "company": "Mattress Mill",
+      "resolved": "false",
+      "claimed": "false"
+    }
+  ],
+  "users": [
+    {
+      "id": 40,
+      "name": "Neil Jensen",
+      "status": "available",
+      "image_url": "http://frodo/WizardSwearsWebAPI/api/Files/Employees/Neil_Jensen.jpg"
+    },
+    {
+      "id": 37,
+      "name": "Peter Alger",
+      "status": "available",
+      "image_url": "http://frodo/WizardSwearsWebAPI/api/Files/Employees/Peter_Alger.jpg"
+    },
+    {
+      "id": 142,
+      "name": "Jostin Flake",
+      "status": "busy",
+      "image_url": "http://frodo/WizardSwearsWebAPI/api/Files/Employees/Jostin_Flake.jpg"
+    },
+    {
+      "id": 64,
+      "name": "Chade Miller",
+      "status": "at lunch",
+      "image_url": "http://frodo/WizardSwearsWebAPI/api/Files/Employees/Chade_Miller.jpg"
+    },
+    {
+      "id": 151,
+      "name": "Nate Hamilton",
+      "status": "busy",
+      "image_url": "http://frodo/WizardSwearsWebAPI/api/Files/Employees/Nate_Hamilton.jpg"
+    }
+  ]
+}
