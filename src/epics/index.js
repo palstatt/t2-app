@@ -2,16 +2,21 @@ import { Observable } from 'rxjs-compat'
 import { combineEpics } from 'redux-observable'
 
 import {
+  ASSIGN_ISSUE,
   CLAIM_ISSUE,
-  LOAD_USERS,
   LOAD_ISSUES,
+  LOAD_USERS,
   RESOLVE_ISSUE,
-  usersLoadedAction,
   errorLoadIssuesAction,
+  issueAssignedAction,
+  issueClaimedAction,
   issueResolvedAction,
   issuesLoadedAction,
-  issueClaimedAction
+  usersLoadedAction
 } from '../actions';
+
+//replace with logic to get current user login
+const currentTechID = 37
 
 //ajax functions
 const avatarAPI = (techName) => {
@@ -25,14 +30,14 @@ const fetchIssueData = (target) => {
 //epics
 const loadIssuesEpic = action$ =>
   action$.ofType(LOAD_ISSUES)
-    .mergeMap(({payload, collectionName}) =>
+    .debounceTime(500)
+    .switchMap(({payload, collectionName}) =>
       Observable.ajax.getJSON(`${process.env.REACT_APP_API_URL}/${payload}`)
         .map(res => issuesLoadedAction(res, collectionName))
         .catch(error =>
           Observable.of(errorLoadIssuesAction(error.xhr.response))
         )
     )
-
 
 const loadAvatarsEpic = action$ =>
   action$.ofType(LOAD_USERS)
@@ -43,7 +48,6 @@ const loadAvatarsEpic = action$ =>
             .map(url => usersLoadedAction(url))
         )
     )
-
 
 const resolveIssueEpic = action$ =>
    action$.ofType(RESOLVE_ISSUE)
@@ -57,11 +61,29 @@ const resolveIssueEpic = action$ =>
 const claimIssueEpic = action$ =>
   action$.ofType(CLAIM_ISSUE)
     .switchMap(({payload}) =>
-      Observable.ajax.patch(`${process.env.REACT_APP_API_URL}/issues/${payload}`, {"claimed": "true"})
+      Observable.ajax.patch(`${process.env.REACT_APP_API_URL}/issues/${payload}`, {
+        "claimed": "true",
+        "assigned_to": currentTechID
+      })
         .map(({response}) =>
           issueClaimedAction(response)
       )
   )
 
+const assignIssueEpic = action$ =>
+  action$.ofType(ASSIGN_ISSUE)
+    .switchMap(({payload, assignTo}) =>
+      Observable.ajax.patch(`${process.env.REACT_APP_API_URL}/issues/${payload}`, {
+        "claimed": `${assignTo === 0 ? 'false' : 'true'}`,
+        "assigned_to": assignTo
+      })
+        .map(({response}) =>
+          issueAssignedAction(response)
+      )
+  )
 
-export const rootEpic = combineEpics(loadIssuesEpic, loadAvatarsEpic, resolveIssueEpic, claimIssueEpic)
+export const rootEpic = combineEpics(loadIssuesEpic,
+                                     loadAvatarsEpic,
+                                     resolveIssueEpic,
+                                     claimIssueEpic,
+                                     assignIssueEpic)

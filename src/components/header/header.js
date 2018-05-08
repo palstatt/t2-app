@@ -1,9 +1,9 @@
-import { ComplexButton, Badge, MaterialIcon, colors } from 'is-ui-library'
-import { connect } from 'react-redux';
 import React, { Component } from 'react'
 import styled from 'styled-components'
-
 import PropTypes from 'prop-types'
+import { ComplexButton, Badge, MaterialIcon, colors } from 'is-ui-library'
+import { connect } from 'react-redux'
+
 
 const HeaderContainer = styled.header`
   position: fixed;
@@ -72,11 +72,5 @@ const mapStateToProps = state => {
     users: state.users
   }
 }
-
-// const mapDispatch = dispatch => {
-//   return {
-//
-//   }
-// }
 
 export default connect(mapStateToProps)(Header);

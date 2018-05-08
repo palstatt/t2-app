@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import React, { Component, Fragment } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import moment from 'moment';
 import { Header, ClaimedCard, UnclaimedCard } from './components';
 import { NavBar, Accent, MaterialIcon, colors, shadows } from 'is-ui-library'
@@ -52,6 +52,7 @@ const CardCollection = ({ unclaimedIssues, claimedIssues, page, handleExpand }) 
         <ClaimedCard
           key={issue.id}
           id={issue.id}
+          assignedTo={issue.assigned_to}
           issue={issue.title}
           author={issue.author}
           companyName={issue.company}
@@ -64,6 +65,24 @@ const CardCollection = ({ unclaimedIssues, claimedIssues, page, handleExpand }) 
   </CardContainer>
 )
 
+const rotate = keyframes`
+  from {
+    transform: rotate(0deg)
+  }
+
+  to {
+    transform: rotate(360deg)
+  }
+`
+
+const LoadingSpinner = styled(MaterialIcon).attrs({
+  children: 'refresh',
+  color: colors.secondary
+})`
+  animation: ${props => props.loading ? `${rotate} .5s ease-in-out` : ''};
+  display: block;
+  transform-origin: center center;
+`
 
 const LoadedTimeContainer = styled.div`
   background: ${colors.white};
@@ -114,7 +133,6 @@ class App extends Component {
       <Fragment>
         <Header
           currentStatus={'available'}
-          availableCount={2}
           navigationComponent={<NavBar
                                   navItems={navigationOptions}
                                   onPageChange={this.handleLoadIssues}
@@ -128,7 +146,7 @@ class App extends Component {
           handleExpand={this.handleExpand}
         />
         <LoadedTimeContainer onClick={() => this.handleLoadIssues(page)}>
-          <MaterialIcon color={colors.secondary}>refresh</MaterialIcon>
+          <LoadingSpinner loading={loading}/>
           {!loading &&
             <Accent>
               Last load: {lastLoaded && moment(lastLoaded).format('h:mm:ss a')}

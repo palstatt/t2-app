@@ -7,6 +7,8 @@ export const LOAD_USERS = 'LOAD_USERS'
 export const USERS_LOADED = 'USERS_LOADED'
 export const CLAIM_ISSUE = 'CLAIM_ISSUE'
 export const ISSUE_CLAIMED = 'ISSUE_CLAIMED'
+export const ASSIGN_ISSUE = 'ASSIGN_ISSUE'
+export const ISSUE_ASSIGNED = 'ISSUE_ASSIGNED'
 
 export const loadIssuesAction = (filter, collectionName) => (
   {
@@ -72,5 +74,20 @@ export const issueClaimedAction = (issue) => (
   {
     type: ISSUE_CLAIMED,
     payload: issue
+  }
+)
+
+export const assignIssueAction = (issueID, techID) => (
+  {
+    type: ASSIGN_ISSUE,
+    payload: issueID,
+    assignTo: techID,
+  }
+)
+
+export const issueAssignedAction = (issue) => (
+  {
+    type: ISSUE_ASSIGNED,
+    payload: issue,
   }
 )

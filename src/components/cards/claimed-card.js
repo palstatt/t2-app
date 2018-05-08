@@ -1,20 +1,29 @@
-import { connect } from 'react-redux';
-import AnimateHeight from 'react-animate-height'
-import React, { Component } from 'react'
-import moment from 'moment'
-import styled from 'styled-components'
-import PropTypes from 'prop-types'
 import {
   FlexibleCard,
   InfoField,
   InputTextArea,
   IconButton,
   Accent,
+  H4,
   H3,
-  gradients,
   colors
-} from 'is-ui-library'
-import { resolveIssueAction } from '../../actions';
+} from 'is-ui-library';
+import { connect } from 'react-redux'
+import React, { Component } from 'react'
+import styled from 'styled-components'
+
+import AnimateHeight from 'react-animate-height'
+import PropTypes from 'prop-types'
+import moment from 'moment'
+
+import { TechPill } from '../'
+import {
+  assignIssueAction,
+  loadIssuesAction,
+  resolveIssueAction
+} from '../../actions';
+import { getColor } from '../../functions'
+import closeImage from '../../content/close.png'
 
 //reusable styles
 const FlexBox = styled.div`
@@ -31,25 +40,12 @@ const HeaderContainer = styled.div`
   justify-content: space-between;
 `
 
-const getBorderColor = status => {
-  switch (status){
-    case 'available':
-      return colors.complete
-    case 'busy':
-      return colors.attention
-    case 'at lunch':
-      return colors.warning
-    default:
-      return colors.black
-  }
-}
-
 const Avatar = styled.img`
+  border: 2px solid ${({status}) => getColor(status)};
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: 2px solid ${({status}) => getBorderColor(status)}
-  ${'' /* background: ${gradients.l_to_r}; */}
+  object-fit: cover;
 `
 
 const AvatarContainer = styled.div`
@@ -87,7 +83,7 @@ const ButtonFlexBox = styled(FlexBox)`
   }
 `
 
-const Header = ({expanded, issue, supportTechAvatar, author, companyName, userStatus}) => (
+const Header = ({expanded, issue, supportTechAvatar, author, companyName, userStatus, onPageChange}) => (
   <HeaderContainer>
     <FlexBox>
       <FlexBox vertical leftAlign>
@@ -113,13 +109,20 @@ const Header = ({expanded, issue, supportTechAvatar, author, companyName, userSt
         </AnimateHeight>
       </FlexBox>
       <AvatarContainer>
-        <Avatar src={supportTechAvatar} status={userStatus}/>
+        <Avatar
+          src={supportTechAvatar}
+          status={userStatus}
+          onClick={(e) => {
+            onPageChange('reassign')
+            expanded && e.stopPropagation()
+          }}
+        />
       </AvatarContainer>
     </FlexBox>
   </HeaderContainer>
 )
 
-const Body = () => (
+const InitBody = () => (
     <BodyContainer>
       <FlexBox vertical leftAlign>
         <InputTextArea
@@ -130,6 +133,59 @@ const Body = () => (
       </FlexBox>
     </BodyContainer>
 )
+
+const PillCollection = styled.div`
+  & > :not(:last-child) {
+    margin-bottom: 8px;
+  }
+`
+
+const ReassignBody = ({users, assignIssue, id, loadIssues, currentPage}) => (
+  <BodyContainer>
+    <H4 center>REASSIGN TO</H4>
+    <PillCollection>
+      {users.map(user =>
+        <TechPill
+          key={user.id}
+          status={user.status}
+          avatarURL={user.image_url}
+          onClick={() => {
+            assignIssue(id, user.id)
+            loadIssues('claimed=true', 'claimedIssues')
+          }}
+        />
+      )}
+      <TechPill
+        border
+        status={'unassign'}
+        avatarURL={closeImage}
+        onClick={() => {
+          assignIssue(id, 0)
+          loadIssues('claimed=true', 'unclaimedIssues')
+        }}
+      />
+    </PillCollection>
+  </BodyContainer>
+)
+
+const Body = ({animating, onPageChange, currentPage, users, assignIssue, id, loadIssues}) => (
+  <AnimateHeight
+    height={animating ? 0 : 'auto'}
+    onAnimationEnd={() => onPageChange()}
+    animateOpacity
+  >
+      {currentPage === 'init'
+      ? <InitBody />
+      : <ReassignBody
+          users={users}
+          assignIssue={assignIssue}
+          id={id}
+          loadIssues={loadIssues}
+          currentPage={currentPage}
+        />}
+  </AnimateHeight>
+)
+
 
 const Footer = ({timeCreated, version, id, resolveIssue}) => (
   <FooterContainer>
@@ -159,7 +215,9 @@ const Footer = ({timeCreated, version, id, resolveIssue}) => (
 class ClaimedCard extends Component {
 
   state = {
-
+    currentPage: 'init',
+    targetPage: '',
+    animating: false
   }
 
   static propTypes = {
@@ -180,6 +238,29 @@ class ClaimedCard extends Component {
     version: 12.3,
   }
 
+  handlePageChange = (pageName) => {
+    this.setState({
+      targetPage: pageName,
+      animating: true,
+   })
+  }
+
+  handlePageFinishChange = () => {
+    this.setState((prevState) => ({
+      currentPage: prevState.targetPage,
+      targetPage: '',
+      animating: false,
+    }))
+  }
+
+  handleCollapse = () => {
+    this.setState({
+      currentPage: 'init',
+      targetPage: '',
+      animating: false
+    })
+  }
+
   render() {
     const {
       id,
@@ -190,20 +271,36 @@ class ClaimedCard extends Component {
       timeCreated,
       version,
       users,
+      assignedTo,
+      assignIssue,
+      loadIssues,
       ...props
       } = this.props
+    const { currentPage, targetPage, animating } = this.state
+    const assignedTech = users.find( user => user.id === Number(assignedTo))
     return (
       <FlexibleCard
         inline
+        onCollapse={this.handleCollapse}
         initHeader={expanded => <Header
                                   expanded={expanded}
                                   issue={issue}
-                                  supportTechAvatar={users[2].image_url}
-                                  userStatus={users[2].status}
+                                  supportTechAvatar={assignedTech.image_url}
+                                  userStatus={assignedTech.status}
                                   author={author}
                                   companyName={companyName}
+                                  onPageChange={(page) => this.handlePageChange(page)}
                                 />}
-        initBodyPage={expanded => <Body expanded={expanded}/>}
+        initBodyPage={expanded => <Body
+                                    currentPage={currentPage}
+                                    animating={animating}
+                                    expanded={expanded}
+                                    onPageChange={this.handlePageFinishChange}
+                                    users={users}
+                                    assignIssue={assignIssue}
+                                    id={id}
+                                    loadIssues={loadIssues}
+                                  />}
         initFooter={expanded => <Footer
                                   id={id}
                                   expanded={expanded}
@@ -225,7 +322,9 @@ const mapStateToProps = state => {
 
 const mapDispatch = dispatch => {
   return {
-    resolveIssue: (id) => dispatch(resolveIssueAction(id))
+    resolveIssue: (id) => dispatch(resolveIssueAction(id)),
+    assignIssue: (issueID, techID) => dispatch(assignIssueAction(issueID, techID)),
+    loadIssues: (filter, collectionName) => dispatch(loadIssuesAction(filter, collectionName)),
   }
 }
 

@@ -1,12 +1,13 @@
 import {
-  USERS_LOADED,
+  ASSIGN_ISSUE,
   CLAIM_ISSUE,
   ERROR_LOAD_ISSUES,
   ISSUES_LOADED,
   ISSUE_RESOLVED,
-  LOAD_USERS,
   LOAD_ISSUES,
-  RESOLVE_ISSUE
+  LOAD_USERS,
+  RESOLVE_ISSUE,
+  USERS_LOADED
 } from '../actions';
 
 const initialState = {
@@ -54,16 +55,22 @@ export default function issuesReducer(state = initialState, action) {
     case LOAD_USERS:
       return {
         ...state,
+        loading: true,
       }
     case USERS_LOADED:
       return {
         ...state,
+        loading: false,
         users: [...state.users, action.payload]
       }
     case CLAIM_ISSUE:
       return {
         ...state,
         unclaimedIssues: state.unclaimedIssues.filter(({id}) => id !== action.payload),
+      }
+    case ASSIGN_ISSUE:
+      return {
+        ...state,
       }
     default:
       return state
