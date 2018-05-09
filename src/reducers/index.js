@@ -6,6 +6,7 @@ import {
   ISSUE_RESOLVED,
   LOAD_ISSUES,
   LOAD_USERS,
+  LOAD_ALL_ISSUES,
   RESOLVE_ISSUE,
   USERS_LOADED
 } from '../actions';
@@ -23,6 +24,7 @@ const initialState = {
 export default function issuesReducer(state = initialState, action) {
   switch(action.type) {
     case LOAD_ISSUES:
+    case LOAD_ALL_ISSUES:
       return {
         ...state,
         loading: true,

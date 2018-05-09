@@ -165,7 +165,7 @@ const Footer = ({timeCreated, version, id, claimIssue}) => (
 class UnclaimedCard extends Component {
 
   state = {
-
+    page: 'init',
   }
 
   static propTypes = {
@@ -197,6 +197,7 @@ class UnclaimedCard extends Component {
       version,
       ...props
       } = this.props
+    const { page } = this.state
     return (
       <FlexibleCard
         inline
@@ -209,7 +210,7 @@ class UnclaimedCard extends Component {
                                   companyName={companyName}
                                   claimIssue={props.claimIssue}
                                 />}
-        initBodyPage={expanded => <Body />}
+        initBodyPage={expanded => <Body page={page}/>}
         initFooter={expanded => <Footer
                                   id={id}
                                   expanded={expanded}

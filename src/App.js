@@ -147,11 +147,9 @@ class App extends Component {
         />
         <LoadedTimeContainer onClick={() => this.handleLoadIssues(page)}>
           <LoadingSpinner loading={loading}/>
-          {!loading &&
             <Accent>
               Last load: {lastLoaded && moment(lastLoaded).format('h:mm:ss a')}
             </Accent>
-          }
         </LoadedTimeContainer>
       </Fragment>
     )

@@ -1,4 +1,5 @@
 export const LOAD_ISSUES = 'LOAD_ISSUES'
+export const LOAD_ALL_ISSUES = 'LOAD_ALL_ISSUES'
 export const ERROR_LOAD_ISSUES = 'ERROR_LOAD_ISSUES'
 export const RESOLVE_ISSUE = 'RESOLVE_ISSUE'
 export const ISSUES_LOADED = 'ISSUES_LOADED'
@@ -15,6 +16,12 @@ export const loadIssuesAction = (filter, collectionName) => (
     type: LOAD_ISSUES,
     payload: `issues?${filter}`,
     collectionName: collectionName,
+  }
+)
+
+export const loadAllIssuesAction = () => (
+  {
+    type: LOAD_ALL_ISSUES,
   }
 )
 

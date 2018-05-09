@@ -12,6 +12,7 @@ import {
   issueClaimedAction,
   issueResolvedAction,
   issuesLoadedAction,
+  loadIssuesAction,
   usersLoadedAction
 } from '../actions';
 
@@ -30,7 +31,7 @@ const fetchIssueData = (target) => {
 //epics
 const loadIssuesEpic = action$ =>
   action$.ofType(LOAD_ISSUES)
-    .debounceTime(500)
+    .debounceTime(200)
     .switchMap(({payload, collectionName}) =>
       Observable.ajax.getJSON(`${process.env.REACT_APP_API_URL}/${payload}`)
         .map(res => issuesLoadedAction(res, collectionName))
@@ -77,8 +78,12 @@ const assignIssueEpic = action$ =>
         "claimed": `${assignTo === 0 ? 'false' : 'true'}`,
         "assigned_to": assignTo
       })
-        .map(({response}) =>
-          issueAssignedAction(response)
+      .mergeMap(({response}) =>
+        Observable.of(
+          issueAssignedAction(response),
+          loadIssuesAction('claimed=false', 'unclaimedIssues'),
+          loadIssuesAction('claimed=true', 'claimedIssues')
+        )
       )
   )
 

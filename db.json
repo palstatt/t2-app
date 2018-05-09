@@ -9,8 +9,8 @@
       "version": 17.11,
       "company": "TemperPack",
       "resolved": "false",
-      "claimed": "true",
-      "assigned_to": "151"
+      "claimed": "false",
+      "assigned_to": "0"
     },
     {
       "id": 2,
@@ -21,8 +21,8 @@
       "version": 18.3,
       "company": "SO Logistics",
       "resolved": "false",
-      "claimed": "true",
-      "assigned_to": "37"
+      "claimed": "false",
+      "assigned_to": "0"
     },
     {
       "id": 3,
