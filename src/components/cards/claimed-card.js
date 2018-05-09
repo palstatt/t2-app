@@ -11,12 +11,11 @@ import {
 import { connect } from 'react-redux'
 import React, { Component } from 'react'
 import styled from 'styled-components'
-
 import AnimateHeight from 'react-animate-height'
 import PropTypes from 'prop-types'
 import moment from 'moment'
-
 import { TechPill } from '../'
+import { AssignPage, InitPage } from './pages'
 import {
   assignIssueAction,
   loadIssuesAction,
@@ -122,68 +121,24 @@ const Header = ({expanded, issue, supportTechAvatar, author, companyName, userSt
   </HeaderContainer>
 )
 
-const InitBody = () => (
-    <BodyContainer>
-      <FlexBox vertical leftAlign>
-        <InputTextArea
-          placeholder="Type notes here..."
-          label="Notes"
-          rows={3}
-        />
-      </FlexBox>
-    </BodyContainer>
-)
-
-const PillCollection = styled.div`
-  & > :not(:last-child) {
-    margin-bottom: 8px;
-  }
-`
-
-const ReassignBody = ({users, assignIssue, id, loadIssues, currentPage}) => (
+const Body = ({animating, onPageChange, currentPage, id}) => (
   <BodyContainer>
-    <H4 center>REASSIGN TO</H4>
-    <PillCollection>
-      {users.map(user =>
-        <TechPill
-          key={user.id}
-          status={user.status}
-          avatarURL={user.image_url}
-          onClick={() => {
-            assignIssue(id, user.id)
-            loadIssues('claimed=true', 'claimedIssues')
-          }}
-        />
-      )}
-      <TechPill
-        border
-        status={'unassign'}
-        avatarURL={closeImage}
-        onClick={() => {
-          assignIssue(id, 0)
-          loadIssues('claimed=true', 'unclaimedIssues')
-        }}
+    {currentPage === 'init' &&
+      <InitPage
+        onPageChange={onPageChange}
+        animating={animating}
       />
-    </PillCollection>
+    }
+    {currentPage === 'reassign' &&
+      <AssignPage
+        label="reassign to"
+        id={id}
+        animating={animating}
+        onPageChange={onPageChange}
+        unassignButton
+      />
+    }
   </BodyContainer>
-)
-
-const Body = ({animating, onPageChange, currentPage, users, assignIssue, id, loadIssues}) => (
-  <AnimateHeight
-    height={animating ? 0 : 'auto'}
-    onAnimationEnd={() => onPageChange()}
-    animateOpacity
-  >
-      {currentPage === 'init'
-      ? <InitBody />
-      : <ReassignBody
-          users={users}
-          assignIssue={assignIssue}
-          id={id}
-          loadIssues={loadIssues}
-          currentPage={currentPage}
-        />}
-  </AnimateHeight>
 )
 
 
@@ -246,8 +201,8 @@ class ClaimedCard extends Component {
   }
 
   handlePageFinishChange = () => {
-    this.setState((prevState) => ({
-      currentPage: prevState.targetPage,
+    this.setState(({targetPage}) => ({
+      currentPage: targetPage !== '' ? targetPage : 'init',
       targetPage: '',
       animating: false,
     }))
@@ -256,7 +211,6 @@ class ClaimedCard extends Component {
   handleCollapse = () => {
     this.setState({
       currentPage: 'init',
-      targetPage: '',
       animating: false
     })
   }

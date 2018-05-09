@@ -16,6 +16,7 @@ import {
   colors
 } from 'is-ui-library'
 import { claimIssueAction } from '../../actions';
+import { AssignPage } from './pages'
 
 const Item = posed.div({
   enter: { opacity: 1, delayChildren: 500 },
@@ -130,14 +131,34 @@ const Header = ({expanded, issue, supportTechAvatar, author, companyName, id, cl
   </HeaderContainer>
 )
 
-const Body = () => (
+const InitPage = ({animating, onPageChange}) => (
+  <AnimateHeight
+    height={animating ? 0 : 'auto'}
+    onAnimationEnd={() => onPageChange()}
+    animateOpacity
+  />
+)
+
+const Body = ({animating, onPageChange, page, id}) => (
     <BodyContainer>
-      <FlexBox vertical leftAlign>
-      </FlexBox>
+      {page === 'init' &&
+        <InitPage
+          animating={animating}
+          onPageChange={onPageChange}
+        />
+      }
+      {page === 'assign' &&
+        <AssignPage
+          label="assign to"
+          id={id}
+          animating={animating}
+          onPageChange={onPageChange}
+        />
+      }
     </BodyContainer>
 )
 
-const Footer = ({timeCreated, version, id, claimIssue}) => (
+const Footer = ({timeCreated, version, id, claimIssue, onPageChange}) => (
   <FooterContainer>
     <FlexBox vertical centerJustify leftAlign>
       <SecondaryInfo>{timeCreated}</SecondaryInfo>
@@ -149,7 +170,7 @@ const Footer = ({timeCreated, version, id, claimIssue}) => (
         mobile
         icon="subdirectory_arrow_right"
         secondary
-        onClick={(id) => console.log(id)}
+        onClick={() => onPageChange('assign')}
       />
       <IconButton
         noLabel
@@ -165,7 +186,9 @@ const Footer = ({timeCreated, version, id, claimIssue}) => (
 class UnclaimedCard extends Component {
 
   state = {
-    page: 'init',
+    currentPage: 'init',
+    targetPage: '',
+    animating: false
   }
 
   static propTypes = {
@@ -186,6 +209,28 @@ class UnclaimedCard extends Component {
     version: 12.3,
   }
 
+  handlePageChange = (pageName) => {
+    this.setState({
+      targetPage: pageName,
+      animating: true,
+   })
+  }
+
+  handlePageFinishChange = () => {
+    this.setState(({targetPage, currentPage}) => ({
+      currentPage: targetPage !== '' ? targetPage : currentPage,
+      targetPage: '',
+      animating: false,
+    }))
+  }
+
+  handleCollapse = () => {
+    this.setState({
+      targetPage: 'init',
+      animating: true,
+    })
+  }
+
   render() {
     const {
       id,
@@ -197,27 +242,40 @@ class UnclaimedCard extends Component {
       version,
       ...props
       } = this.props
-    const { page } = this.state
+    const { currentPage, animating } = this.state
     return (
       <FlexibleCard
         inline
-        initHeader={expanded => <Header
-                                  id={id}
-                                  expanded={expanded}
-                                  issue={issue}
-                                  supportTechAvatar={supportTechAvatar}
-                                  author={author}
-                                  companyName={companyName}
-                                  claimIssue={props.claimIssue}
-                                />}
-        initBodyPage={expanded => <Body page={page}/>}
-        initFooter={expanded => <Footer
-                                  id={id}
-                                  expanded={expanded}
-                                  timeCreated={moment.unix(timeCreated).fromNow()}
-                                  version={version}
-                                  claimIssue={props.claimIssue}
-                                />}
+        onCollapse={this.handleCollapse}
+        initHeader=
+          {expanded =>
+            <Header
+              id={id}
+              expanded={expanded}
+              issue={issue}
+              supportTechAvatar={supportTechAvatar}
+              author={author}
+              companyName={companyName}
+              claimIssue={props.claimIssue}
+            />}
+        initBodyPage=
+          {expanded =>
+            <Body
+              page={currentPage}
+              id={id}
+              animating={animating}
+              onPageChange={this.handlePageFinishChange}
+            />}
+        initFooter=
+          {expanded =>
+            <Footer
+              id={id}
+              expanded={expanded}
+              timeCreated={moment.unix(timeCreated).fromNow()}
+              version={version}
+              claimIssue={props.claimIssue}
+              onPageChange={(page) => this.handlePageChange(page)}
+            />}
         {...props}
       />
     )

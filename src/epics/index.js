@@ -31,7 +31,6 @@ const fetchIssueData = (target) => {
 //epics
 const loadIssuesEpic = action$ =>
   action$.ofType(LOAD_ISSUES)
-    .debounceTime(200)
     .switchMap(({payload, collectionName}) =>
       Observable.ajax.getJSON(`${process.env.REACT_APP_API_URL}/${payload}`)
         .map(res => issuesLoadedAction(res, collectionName))
