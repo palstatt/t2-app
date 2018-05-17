@@ -1,21 +1,31 @@
+import { NavBar, Accent, MaterialIcon, Badge, colors, shadows } from 'is-ui-library'
 import { connect } from 'react-redux';
 import React, { Component, Fragment } from 'react';
-import styled, { keyframes } from 'styled-components';
 import moment from 'moment';
-import { Header, ClaimedCard, UnclaimedCard } from './components';
-import { NavBar, Accent, MaterialIcon, colors, shadows } from 'is-ui-library'
-import { loadUsersAction, loadIssuesAction } from './actions';
+import styled, { keyframes } from 'styled-components';
 
-const navigationOptions = [
-  {
-    name: 'unclaimed',
-    id: 1,
-  },
-  {
-    name: 'claimed',
-    id: 2,
-  },
-]
+import { Header, ClaimedCard, UnclaimedCard } from './components';
+import {
+  loadAllIssuesAction,
+  loadIssuesAction,
+  loadUsersAction,
+  loginRequestAction
+} from './actions';
+
+const navigationOptions = (values = [0, 0]) => (
+  [
+    {
+      name: 'unclaimed',
+      id: 1,
+      childComponent: <Badge theme="warning" value={values[0]} small/>
+    },
+    {
+      name: 'claimed',
+      id: 2,
+      childComponent: <Badge theme="attention" value={values[1]} small/>
+    },
+  ]
+)
 
 const CardContainer = styled.div`
   width: 100%;
@@ -25,7 +35,8 @@ const CardContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
   & > * {
     margin-bottom: 16px;
   }
@@ -67,12 +78,23 @@ const CardCollection = ({ unclaimedIssues, claimedIssues, page, handleExpand }) 
 
 const rotate = keyframes`
   from {
-    transform: rotate(0deg)
+    transform: rotate(0deg);
   }
 
   to {
-    transform: rotate(360deg)
+    transform: rotate(360deg);
   }
+`
+
+const glow = keyframes`
+  0%, 100% {
+    opacity: 0.75;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
 `
 
 const LoadingSpinner = styled(MaterialIcon).attrs({
@@ -91,6 +113,7 @@ const LoadedTimeContainer = styled.div`
   justify-content: center;
   align-items: center;
   position: fixed;
+  z-index: 100;
   padding: 8px;
   left: 16px;
   bottom: 16px;
@@ -102,6 +125,30 @@ const LoadedTimeContainer = styled.div`
   }
 `
 
+const WarningIcon = styled(MaterialIcon).attrs({
+  children: 'warning',
+  color: colors.warning
+})`
+  animation: ${glow} 1.5s ease-in-out infinite;
+  display: block;
+  transform-origin: center center;
+`
+
+const MessagesContainer = styled.div`
+  background: ${colors.white};
+  box-shadow: ${shadows.basic};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 100;
+  padding: 8px;
+  right: 16px;
+  bottom: 16px;
+  border-radius: 4px;
+  transition: .2s ease;
+`
+
 class App extends Component {
 
   state = {
@@ -109,8 +156,9 @@ class App extends Component {
     page: 'unclaimed',
   }
 
-  componentWillMount() {
-    this.props.loadIssues('claimed=false', 'unclaimedIssues')
+  componentDidMount() {
+    this.props.loginRequest(142)
+    this.props.loadAllIssues()
     this.props.loadUsers('claimed=true')
   }
 
@@ -127,14 +175,15 @@ class App extends Component {
   }
 
   render() {
-    const { unclaimedIssues, claimedIssues, loading, lastLoaded } = this.props
+    const { unclaimedIssues, claimedIssues, loading, lastLoaded, messages } = this.props
     const { page } = this.state
+    const values = [ unclaimedIssues.length, claimedIssues.length ]
     return (
       <Fragment>
         <Header
           currentStatus={'available'}
           navigationComponent={<NavBar
-                                  navItems={navigationOptions}
+                                  navItems={navigationOptions(values)}
                                   onPageChange={this.handleLoadIssues}
                                   fillWidth
                                />}
@@ -151,6 +200,11 @@ class App extends Component {
               Last load: {lastLoaded && moment(lastLoaded).format('h:mm:ss a')}
             </Accent>
         </LoadedTimeContainer>
+        {messages.length > 0 &&
+          <MessagesContainer>
+            <WarningIcon />
+          </MessagesContainer>
+        }
       </Fragment>
     )
   }
@@ -161,12 +215,15 @@ const mapStateToProps = state => {
     unclaimedIssues: state.unclaimedIssues,
     claimedIssues: state.claimedIssues,
     loading: state.loading,
-    lastLoaded: state.lastLoaded
+    lastLoaded: state.lastLoaded,
+    messages: state.messages
   }
 }
 
 const mapDispatch = dispatch => {
   return {
+    loginRequest: (id) => dispatch(loginRequestAction(id)),
+    loadAllIssues: () => dispatch(loadAllIssuesAction()),
     loadIssues: (filter, collectionName) => dispatch(loadIssuesAction(filter, collectionName)),
     loadUsers: (filter) => dispatch(loadUsersAction(filter))
   }

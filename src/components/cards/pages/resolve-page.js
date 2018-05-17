@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { InputTextArea } from 'is-ui-library'
 import AnimateHeight from 'react-animate-height'
+
+const AnimateHeightStyled = styled(AnimateHeight)`
+  margin: 8px 0;
+`
 
 const FlexBox = styled.div`
   display: flex;
@@ -11,22 +14,17 @@ const FlexBox = styled.div`
   justify-content: ${props => props.centerJustify ? 'center' : 'space-between'};
 `
 
-export default class InitPage extends Component {
+export default class ResolvePage extends Component {
 
   state = {
-    
-  }
-
-  static propTypes = {
-
+    rendered: true,
   }
 
   render() {
-    const { animating, onPageChange } = this.props
+    const { rendered } = this.state
     return (
-      <AnimateHeight
-        height={animating ? 0 : 'auto'}
-        onAnimationEnd={() => onPageChange()}
+      <AnimateHeightStyled
+        height={rendered ? 'auto' : 0}
         animateOpacity
       >
           <FlexBox vertical leftAlign>
@@ -36,7 +34,7 @@ export default class InitPage extends Component {
               rows={3}
             />
           </FlexBox>
-      </AnimateHeight>
+      </AnimateHeightStyled>
     )
   }
 }

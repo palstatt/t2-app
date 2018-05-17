@@ -8,9 +8,9 @@
       "request_date": 1525079649,
       "version": 17.11,
       "company": "TemperPack",
-      "resolved": "false",
-      "claimed": "true",
-      "assigned_to": "37"
+      "resolved": true,
+      "claimed": true,
+      "assigned_to": 142
     },
     {
       "id": 2,
@@ -20,9 +20,9 @@
       "request_date": 1525079700,
       "version": 18.3,
       "company": "SO Logistics",
-      "resolved": "false",
-      "claimed": "true",
-      "assigned_to": "142"
+      "resolved": false,
+      "claimed": true,
+      "assigned_to": 142
     },
     {
       "id": 3,
@@ -32,9 +32,9 @@
       "request_date": 1525079800,
       "version": 17.13,
       "company": "Mothers Brewing",
-      "resolved": "false",
-      "claimed": "false",
-      "assigned_to": "0"
+      "resolved": false,
+      "claimed": false,
+      "assigned_to": 0
     },
     {
       "id": 4,
@@ -44,9 +44,9 @@
       "request_date": 1525079900,
       "version": 18.4,
       "company": "Mattress Mill",
-      "resolved": "false",
-      "claimed": "false",
-      "assigned_to": "37"
+      "resolved": false,
+      "claimed": false,
+      "assigned_to": 0
     }
   ],
   "users": [

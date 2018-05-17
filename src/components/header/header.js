@@ -4,7 +4,6 @@ import PropTypes from 'prop-types'
 import { ComplexButton, Badge, MaterialIcon, colors } from 'is-ui-library'
 import { connect } from 'react-redux'
 
-
 const HeaderContainer = styled.header`
   position: fixed;
   top: 0;
@@ -46,18 +45,44 @@ class Header extends Component {
     currentStatus: 'available',
   }
 
+  createTheme = () => {
+    const { currentUser } = this.props
+    switch(currentUser.status){
+      case 'available':
+        return {
+          bg: colors.black,
+          fg: colors.complete,
+        }
+      case 'busy':
+        return {
+          bg: colors.black,
+          fg: colors.attention,
+        }
+      case 'at lunch':
+        return {
+          bg: colors.black,
+          fg: colors.warning,
+        }
+      default:
+        return {
+          bg: colors.black,
+          fg: colors.white
+        }
+    }
+  }
+
   render() {
-    const { currentStatus, users, navigationComponent } = this.props
+    const { currentStatus, users, navigationComponent, currentUser } = this.props
+    const theme = this.createTheme()
     return (
       <HeaderContainer>
         <TopContainer>
           <MaterialIcon large>menu</MaterialIcon>
           <ComplexButton
-            label={currentStatus}
+            customTheme={theme}
+            label={currentUser.status || 'loading'}
             childComponent={<AvailableTechsBadge
-                              availableCount={
-                                users.filter(user => user.status === 'available').length
-                              }
+                              availableCount={users.filter(user => user.status === 'available').length}
                             />}
           />
         </TopContainer>
@@ -69,7 +94,8 @@ class Header extends Component {
 
 const mapStateToProps = state => {
   return {
-    users: state.users
+    users: state.users,
+    currentUser: state.currentUser
   }
 }
 

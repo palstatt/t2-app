@@ -1,28 +1,22 @@
 import {
   FlexibleCard,
   InfoField,
-  InputTextArea,
   IconButton,
   Accent,
-  H4,
   H3,
   colors
 } from 'is-ui-library';
 import { connect } from 'react-redux'
 import React, { Component } from 'react'
+import moment from 'moment'
 import styled from 'styled-components'
+
 import AnimateHeight from 'react-animate-height'
 import PropTypes from 'prop-types'
-import moment from 'moment'
-import { TechPill } from '../'
-import { AssignPage, InitPage } from './pages'
-import {
-  assignIssueAction,
-  loadIssuesAction,
-  resolveIssueAction
-} from '../../actions';
+
+import { AssignPage, ResolvePage } from './pages'
+import { assignIssueAction, resolveIssueAction } from '../../actions';
 import { getColor } from '../../functions'
-import closeImage from '../../content/close.png'
 
 //reusable styles
 const FlexBox = styled.div`
@@ -61,11 +55,6 @@ const Title = styled(H3)`
   margin-bottom: 8px;
 `
 
-// body styles
-const BodyContainer = styled.div`
-  padding: 8px 0;
-`
-
 //footer styles
 const FooterContainer = styled.div`
   display: flex;
@@ -82,8 +71,17 @@ const ButtonFlexBox = styled(FlexBox)`
   }
 `
 
-const Header = ({expanded, issue, supportTechAvatar, author, companyName, userStatus, onPageChange}) => (
-  <HeaderContainer>
+const Header = ({
+  expanded,
+  issue,
+  supportTechAvatar,
+  author,
+  companyName,
+  userStatus,
+  onPageChange,
+  onCollapse
+}) => (
+  <HeaderContainer onClick={onCollapse}>
     <FlexBox>
       <FlexBox vertical leftAlign>
         <Title expanded={expanded}>
@@ -112,7 +110,7 @@ const Header = ({expanded, issue, supportTechAvatar, author, companyName, userSt
           src={supportTechAvatar}
           status={userStatus}
           onClick={(e) => {
-            onPageChange('reassign')
+            onPageChange(1)
             expanded && e.stopPropagation()
           }}
         />
@@ -121,28 +119,8 @@ const Header = ({expanded, issue, supportTechAvatar, author, companyName, userSt
   </HeaderContainer>
 )
 
-const Body = ({animating, onPageChange, currentPage, id}) => (
-  <BodyContainer>
-    {currentPage === 'init' &&
-      <InitPage
-        onPageChange={onPageChange}
-        animating={animating}
-      />
-    }
-    {currentPage === 'reassign' &&
-      <AssignPage
-        label="reassign to"
-        id={id}
-        animating={animating}
-        onPageChange={onPageChange}
-        unassignButton
-      />
-    }
-  </BodyContainer>
-)
 
-
-const Footer = ({timeCreated, version, id, resolveIssue}) => (
+const InitFooter = ({timeCreated, version, id, resolveIssue}) => (
   <FooterContainer>
     <FlexBox vertical centerJustify leftAlign>
       <SecondaryInfo>{timeCreated}</SecondaryInfo>
@@ -166,13 +144,36 @@ const Footer = ({timeCreated, version, id, resolveIssue}) => (
   </FooterContainer>
 )
 
+const ResolveFooter = ({ timeCreated, version, onPageChange }) => (
+  <FooterContainer>
+    <FlexBox vertical centerJustify leftAlign>
+      <SecondaryInfo>{timeCreated}</SecondaryInfo>
+      <SecondaryInfo>{version}</SecondaryInfo>
+    </FlexBox>
+    <ButtonFlexBox>
+      <IconButton
+        noLabel
+        mobile
+        icon="close"
+        primaryColorName="warning"
+        onClick={() => onPageChange(0)}
+      />
+    </ButtonFlexBox>
+  </FooterContainer>
+)
 
 class ClaimedCard extends Component {
 
   state = {
-    currentPage: 'init',
-    targetPage: '',
-    animating: false
+    expanded: false,
+    currentPage: 0,
+    animating: false,
+    leaveRight: false,
+    leaveLeft: false,
+    actionLabel: '',
+    actionColor: 'primary',
+    reassignTo: '',
+    reassigned: false,
   }
 
   static propTypes = {
@@ -193,25 +194,63 @@ class ClaimedCard extends Component {
     version: 12.3,
   }
 
-  handlePageChange = (pageName) => {
+  handlePageChange = (pageID) => {
     this.setState({
-      targetPage: pageName,
+      currentPage: pageID,
       animating: true,
    })
   }
 
-  handlePageFinishChange = () => {
-    this.setState(({targetPage}) => ({
-      currentPage: targetPage !== '' ? targetPage : 'init',
-      targetPage: '',
-      animating: false,
-    }))
-  }
-
   handleCollapse = () => {
     this.setState({
-      currentPage: 'init',
-      animating: false
+      currentPage: 0,
+      expanded: false,
+    })
+  }
+
+  handleExpand = () => {
+    this.setState({
+      currentPage: 0,
+      expanded: true,
+    })
+  }
+
+  handleReassign = (userName, ...params) => {
+    this.setState({
+      reassignTo: userName,
+      reassigned: true
+    },
+      () => {
+        setTimeout(() => {
+          this.handleCollapse()
+          this.setState({
+            reassignTo: '',
+            reassigned: false
+          }, () => this.props.assignIssue(...params))
+        }, 1500)
+      }
+    )
+  }
+
+  // callback hell (replace with observable???)
+  handleAction = (direction = 'right', label, color, action, ...params) => {
+    const { expanded } = this.state
+    const exitAnimation = direction === 'left' ? 'leaveLeft' : 'leaveRight'
+    this.setState({
+      expanded: false,
+      actionLabel: label,
+      actionColor: color,
+    },
+      () => {
+        setTimeout(() => {
+          this.setState({ [exitAnimation]: true },
+            () => {
+            setTimeout(() =>
+            {
+              action(...params)
+          }, 1000)
+          }
+      ,)}, expanded ? 500 : 0)
     })
   }
 
@@ -227,41 +266,74 @@ class ClaimedCard extends Component {
       users,
       assignedTo,
       assignIssue,
-      loadIssues,
       ...props
       } = this.props
-    const { currentPage, targetPage, animating } = this.state
-    const assignedTech = users.find( user => user.id === Number(assignedTo))
+    const {
+      expanded,
+      currentPage,
+      leaveRight,
+      leaveLeft,
+      actionLabel,
+      actionColor,
+      reassignTo,
+      reassigned
+      } = this.state
+    const assignedTech = users.find(user => user.id === Number(assignedTo))
+    const filteredUsers = users.filter(user => user.id !== assignedTech.id)
     return (
       <FlexibleCard
         inline
-        onCollapse={this.handleCollapse}
-        initHeader={expanded => <Header
-                                  expanded={expanded}
-                                  issue={issue}
-                                  supportTechAvatar={assignedTech.image_url}
-                                  userStatus={assignedTech.status}
-                                  author={author}
-                                  companyName={companyName}
-                                  onPageChange={(page) => this.handlePageChange(page)}
-                                />}
-        initBodyPage={expanded => <Body
-                                    currentPage={currentPage}
-                                    animating={animating}
-                                    expanded={expanded}
-                                    onPageChange={this.handlePageFinishChange}
-                                    users={users}
-                                    assignIssue={assignIssue}
-                                    id={id}
-                                    loadIssues={loadIssues}
-                                  />}
-        initFooter={expanded => <Footer
-                                  id={id}
-                                  expanded={expanded}
-                                  timeCreated={moment.unix(timeCreated).fromNow()}
-                                  version={version}
-                                  resolveIssue={props.resolveIssue}
-                                />}
+        bodyPageID={currentPage}
+        footerID={currentPage}
+        leaveRight={leaveRight}
+        leaveLeft={leaveLeft}
+        actionLabel={actionLabel}
+        actionColor={actionColor}
+        expanded={expanded}
+        headers=
+          {[
+            <Header
+              expanded={expanded}
+              issue={issue}
+              supportTechAvatar={assignedTech.image_url}
+              userStatus={assignedTech.status}
+              author={author}
+              companyName={companyName}
+              onPageChange={(page) => this.handlePageChange(page)}
+              onCollapse={expanded ? this.handleCollapse : this.handleExpand}
+            />
+          ]}
+        bodyPages=
+        {[
+          <ResolvePage expanded={expanded}/>
+          ,
+          <AssignPage
+            label="reassign to"
+            id={id}
+            userCollection={filteredUsers}
+            unassignButton
+            reassigned={reassigned}
+            reassignTo={reassignTo}
+            handleReassign={(userName, ...params) => this.handleReassign(userName, ...params)}
+            handleAction={(direction, label, color, ...params) => this.handleAction(direction, label, color, assignIssue, ...params)}
+          />
+        ]}
+        footers=
+        {[
+          <InitFooter
+            id={id}
+            expanded={expanded}
+            timeCreated={moment.unix(timeCreated).fromNow()}
+            version={version}
+            resolveIssue={props.resolveIssue}
+          />
+          ,
+          <ResolveFooter
+            timeCreated={moment.unix(timeCreated).fromNow()}
+            version={version}
+            onPageChange={(page) => this.handlePageChange(page)}
+          />
+        ]}
         {...props}
       />
     )
@@ -278,7 +350,6 @@ const mapDispatch = dispatch => {
   return {
     resolveIssue: (id) => dispatch(resolveIssueAction(id)),
     assignIssue: (issueID, techID) => dispatch(assignIssueAction(issueID, techID)),
-    loadIssues: (filter, collectionName) => dispatch(loadIssuesAction(filter, collectionName)),
   }
 }
 

@@ -1,22 +1,22 @@
-import { connect } from 'react-redux';
-import AnimateHeight from 'react-animate-height'
-import React, { Component } from 'react'
-import moment from 'moment'
-import posed, { PoseGroup } from 'react-pose'
-import styled from 'styled-components'
-import PropTypes from 'prop-types'
 import {
   FlexibleCard,
   InfoField,
-  InputTextArea,
   IconButton,
   Accent,
   H3,
-  gradients,
   colors
 } from 'is-ui-library'
-import { claimIssueAction } from '../../actions';
+import { connect } from 'react-redux';
+import React, { Component, Fragment } from 'react'
+import moment from 'moment'
+import styled from 'styled-components'
+
+import AnimateHeight from 'react-animate-height'
+import PropTypes from 'prop-types'
+import posed, { PoseGroup } from 'react-pose'
+
 import { AssignPage } from './pages'
+import { assignIssueAction, claimIssueAction } from '../../actions';
 
 const Item = posed.div({
   enter: { opacity: 1, delayChildren: 500 },
@@ -38,21 +38,6 @@ const HeaderContainer = styled.div`
   justify-content: space-between;
 `
 
-const Avatar = styled.img.attrs({
-  href: props => props.avatarUrl,
-})`
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background-image: ${gradients.l_to_r};
-`
-
-const AvatarContainer = styled.div`
-  width: 56px;
-  height: 56px;
-  align-self: flex-start;
-`
-
 const Title = styled(H3)`
   width: ${props => props.expanded ? '100%' : '65vw'};
   white-space: ${props => props.expanded ? 'normal' : 'nowrap'};
@@ -62,15 +47,11 @@ const Title = styled(H3)`
   transition: .2s ease;
 `
 
-// body styles
-const BodyContainer = styled.div`
-  padding: 8px 0;
-`
-
 //footer styles
 const FooterContainer = styled.div`
   display: flex;
   justify-content: space-between;
+  margin-top: 8px;
 `
 
 const SecondaryInfo = styled(Accent)`
@@ -83,12 +64,8 @@ const ButtonFlexBox = styled(FlexBox)`
   }
 `
 
-const TitleContainer = styled.div`
-  width: 100%;
-`
-
-const Header = ({expanded, issue, supportTechAvatar, author, companyName, id, claimIssue}) => (
-  <HeaderContainer>
+const Header = ({expanded, issue, supportTechAvatar, author, companyName, id, claimIssue, onClick}) => (
+  <HeaderContainer onClick={onClick}>
     <FlexBox>
       <FlexBox vertical leftAlign>
         <Title expanded={expanded}>
@@ -136,29 +113,12 @@ const InitPage = ({animating, onPageChange}) => (
     height={animating ? 0 : 'auto'}
     onAnimationEnd={() => onPageChange()}
     animateOpacity
-  />
+  >
+    <Fragment />
+  </AnimateHeight>
 )
 
-const Body = ({animating, onPageChange, page, id}) => (
-    <BodyContainer>
-      {page === 'init' &&
-        <InitPage
-          animating={animating}
-          onPageChange={onPageChange}
-        />
-      }
-      {page === 'assign' &&
-        <AssignPage
-          label="assign to"
-          id={id}
-          animating={animating}
-          onPageChange={onPageChange}
-        />
-      }
-    </BodyContainer>
-)
-
-const Footer = ({timeCreated, version, id, claimIssue, onPageChange}) => (
+const InitFooter = ({timeCreated, version, id, handleAction, onPageChange, claimIssue}) => (
   <FooterContainer>
     <FlexBox vertical centerJustify leftAlign>
       <SecondaryInfo>{timeCreated}</SecondaryInfo>
@@ -170,7 +130,7 @@ const Footer = ({timeCreated, version, id, claimIssue, onPageChange}) => (
         mobile
         icon="subdirectory_arrow_right"
         secondary
-        onClick={() => onPageChange('assign')}
+        onClick={() => onPageChange(1)}
       />
       <IconButton
         noLabel
@@ -182,13 +142,34 @@ const Footer = ({timeCreated, version, id, claimIssue, onPageChange}) => (
   </FooterContainer>
 )
 
+const ResolveFooter = ({ timeCreated, version, onPageChange }) => (
+  <FooterContainer>
+    <FlexBox vertical centerJustify leftAlign>
+      <SecondaryInfo>{timeCreated}</SecondaryInfo>
+      <SecondaryInfo>{version}</SecondaryInfo>
+    </FlexBox>
+    <ButtonFlexBox>
+      <IconButton
+        noLabel
+        mobile
+        icon="close"
+        primaryColorName="warning"
+        onClick={() => onPageChange(0)}
+      />
+    </ButtonFlexBox>
+  </FooterContainer>
+)
 
 class UnclaimedCard extends Component {
 
   state = {
-    currentPage: 'init',
-    targetPage: '',
-    animating: false
+    expanded: false,
+    currentPage: 0,
+    animating: false,
+    leaveRight: false,
+    leaveLeft: false,
+    actionLabel: '',
+    actionColor: 'complete',
   }
 
   static propTypes = {
@@ -209,25 +190,46 @@ class UnclaimedCard extends Component {
     version: 12.3,
   }
 
-  handlePageChange = (pageName) => {
+  handlePageChange = (pageID) => {
     this.setState({
-      targetPage: pageName,
+      currentPage: pageID,
       animating: true,
    })
   }
 
-  handlePageFinishChange = () => {
-    this.setState(({targetPage, currentPage}) => ({
-      currentPage: targetPage !== '' ? targetPage : currentPage,
-      targetPage: '',
-      animating: false,
-    }))
-  }
-
   handleCollapse = () => {
     this.setState({
-      targetPage: 'init',
-      animating: true,
+      currentPage: 0,
+      expanded: false,
+    })
+  }
+
+  handleExpand = () => {
+    this.setState({
+      currentPage: 0,
+      expanded: true,
+    })
+  }
+
+// callback hell (replace with observable???)
+  handleAction = (direction = 'right', label, color, action, ...params) => {
+    const { expanded } = this.state
+    const exitAnimation = direction === 'left' ? 'leaveLeft' : 'leaveRight'
+    this.setState({
+      expanded: false,
+      actionLabel: label,
+      actionColor: color,
+    },
+      () => {
+        setTimeout(() => {
+          this.setState({ [exitAnimation]: true },
+            () => {
+            setTimeout(() =>
+            {
+              action(...params)
+          }, 1000)
+          }
+      ,)}, expanded ? 500 : 0)
     })
   }
 
@@ -235,20 +237,38 @@ class UnclaimedCard extends Component {
     const {
       id,
       issue,
+      users,
       supportTechAvatar,
       author,
       companyName,
       timeCreated,
       version,
+      claimIssue,
+      assignIssue,
+      currentUserID,
       ...props
       } = this.props
-    const { currentPage, animating } = this.state
+    const {
+      currentPage,
+      expanded,
+      leaveLeft,
+      leaveRight,
+      actionColor,
+      actionLabel } = this.state
+    const filteredUsers = users.filter(({id}) => id !== currentUserID)
     return (
       <FlexibleCard
         inline
+        expanded={expanded}
+        bodyPageID={currentPage}
+        footerID={currentPage}
         onCollapse={this.handleCollapse}
-        initHeader=
-          {expanded =>
+        leaveRight={leaveRight}
+        leaveLeft={leaveLeft}
+        actionLabel={actionLabel}
+        actionColor={actionColor}
+        headers=
+          {[
             <Header
               id={id}
               expanded={expanded}
@@ -256,26 +276,37 @@ class UnclaimedCard extends Component {
               supportTechAvatar={supportTechAvatar}
               author={author}
               companyName={companyName}
-              claimIssue={props.claimIssue}
-            />}
-        initBodyPage=
-          {expanded =>
-            <Body
-              page={currentPage}
+              claimIssue={(id) => this.handleAction('right', 'claimed', 'complete', claimIssue, id)}
+              onClick={expanded ? this.handleCollapse : this.handleExpand}
+            />]}
+        bodyPages=
+          {[
+            <InitPage />
+            ,
+            <AssignPage
+              label="assign to"
               id={id}
-              animating={animating}
-              onPageChange={this.handlePageFinishChange}
-            />}
-        initFooter=
-          {expanded =>
-            <Footer
+              userCollection={filteredUsers}
+              handleAction={(direction, label, color, ...params) => this.handleAction(direction, label, color, assignIssue, ...params)}
+            />
+          ]}
+        footers=
+          {[
+            <InitFooter
               id={id}
               expanded={expanded}
               timeCreated={moment.unix(timeCreated).fromNow()}
               version={version}
-              claimIssue={props.claimIssue}
+              claimIssue={(id) => this.handleAction('right', 'claimed', 'complete', claimIssue, id)}
               onPageChange={(page) => this.handlePageChange(page)}
-            />}
+            />
+            ,
+            <ResolveFooter
+              timeCreated={moment.unix(timeCreated).fromNow()}
+              version={version}
+              onPageChange={(page) => this.handlePageChange(page)}
+            />
+          ]}
         {...props}
       />
     )
@@ -284,13 +315,16 @@ class UnclaimedCard extends Component {
 
 const mapStateToProps = state => {
   return {
-    issues: state.issues
+    issues: state.issues,
+    users: state.users,
+    currentUserID: state.currentUser.id,
   }
 }
 
 const mapDispatch = dispatch => {
   return {
-    claimIssue: (id) => dispatch(claimIssueAction(id))
+    claimIssue: (id) => dispatch(claimIssueAction(id)),
+    assignIssue: (issueID, techID) => dispatch(assignIssueAction(issueID, techID)),
   }
 }
 

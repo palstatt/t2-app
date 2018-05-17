@@ -1,12 +1,15 @@
 import {
+  ALL_ISSUES_LOADED,
   ASSIGN_ISSUE,
   CLAIM_ISSUE,
-  ERROR_LOAD_ISSUES,
+  ERROR_QUERY,
   ISSUES_LOADED,
   ISSUE_RESOLVED,
+  LOAD_ALL_ISSUES,
   LOAD_ISSUES,
   LOAD_USERS,
-  LOAD_ALL_ISSUES,
+  LOGIN_FULFILLED,
+  LOGIN_REQUEST,
   RESOLVE_ISSUE,
   USERS_LOADED
 } from '../actions';
@@ -18,21 +21,44 @@ const initialState = {
   claimedIssues: [],
   resolvedIssues: [],
   users: [],
+  currentUser: {},
   lastLoaded: null,
 }
 
 export default function issuesReducer(state = initialState, action) {
   switch(action.type) {
+    case LOGIN_REQUEST:
+      return {
+        ...state,
+        loading: true,
+      }
+    case LOGIN_FULFILLED:
+      return {
+        ...state,
+        loading: false,
+        currentUser: action.payload,
+      }
     case LOAD_ISSUES:
     case LOAD_ALL_ISSUES:
       return {
         ...state,
         loading: true,
       }
-    case ERROR_LOAD_ISSUES:
+    case ALL_ISSUES_LOADED:
       return {
         ...state,
-        messages: [{ type: 'error', text: action.payload }],
+        loading: false,
+        unclaimedIssues: action.payload.filter(({claimed}) => !claimed),
+        claimedIssues: action.payload.filter(({claimed}) => claimed),
+        lastLoaded: action.loadedAt,
+      }
+    case ERROR_QUERY:
+      return {
+        ...state,
+        messages: [
+          ...state.messages,
+          { type: 'error', text: action.payload, actionSource: action.actionSource }
+        ],
       }
     case ISSUES_LOADED:
       return {
@@ -40,7 +66,7 @@ export default function issuesReducer(state = initialState, action) {
         loading: false,
         [action.collectionName]: action.payload,
         messages: [],
-        lastLoaded: action.loadedAt
+        lastLoaded: action.loadedAt,
       }
     case RESOLVE_ISSUE:
       return {
@@ -63,7 +89,7 @@ export default function issuesReducer(state = initialState, action) {
       return {
         ...state,
         loading: false,
-        users: [...state.users, action.payload]
+        users: [...action.payload]
       }
     case CLAIM_ISSUE:
       return {
@@ -73,6 +99,7 @@ export default function issuesReducer(state = initialState, action) {
     case ASSIGN_ISSUE:
       return {
         ...state,
+        unclaimedIssues: state.unclaimedIssues.filter(({id}) => id !== action.payload),
       }
     default:
       return state
