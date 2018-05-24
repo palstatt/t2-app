@@ -163,8 +163,8 @@ const assignIssueEpic = action$ =>
             issueAssignedAction(issue),
             loadAllIssuesAction()
           )
-      ),
-      catchError(error => handleError(error, type))
+        ),
+        catchError(error => handleError(error, type))
       )
     )
   )

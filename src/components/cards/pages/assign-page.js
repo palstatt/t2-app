@@ -1,12 +1,9 @@
-import { H3, H2, MaterialIcon } from 'is-ui-library'
 import React, { Component, Fragment } from 'react'
 import styled from 'styled-components'
-
 import AnimateHeight from 'react-animate-height'
 import PropTypes from 'prop-types'
-
+import { H3, H2, MaterialIcon } from 'is-ui-library'
 import { TechPill } from '../..'
-import closeImage from '../../../content/close.png'
 
 const PillCollection = styled.div`
   & > :not(:last-child) {
