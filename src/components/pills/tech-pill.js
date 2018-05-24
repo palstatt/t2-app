@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
-import { H4, colors } from 'is-ui-library'
+import { H4, MaterialIcon, colors } from 'is-ui-library'
 import { getColor } from '../../functions'
-import closeImage from '../../content/close.png'
 
 const PillContainer = styled.div`
   background: ${props => getColor(props.status) || colors.white};
@@ -27,6 +26,15 @@ const Avatar = styled.img`
   object-fit: cover;
 `
 
+const IconContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  width: 40px;
+  border-radius: 40px;
+`
+
 const TechStatus = styled(H4)`
   margin-left: 8px;
   line-height: normal;
@@ -43,7 +51,14 @@ export default class TechPill extends Component {
     return (
       <PillContainer status={status} border={border} {...props} >
         <TechStatusContainer>
-          <Avatar src={avatarURL} onError={(e) => {e.target.src=closeImage}} />
+          {avatarURL
+            ?
+              <Avatar src={avatarURL} />
+            :
+              <IconContainer>
+                <MaterialIcon large>close</MaterialIcon>
+              </IconContainer>
+          }
           <TechStatus>{status.toUpperCase()}</TechStatus>
         </TechStatusContainer>
       </PillContainer>

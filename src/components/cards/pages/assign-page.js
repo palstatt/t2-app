@@ -1,4 +1,4 @@
-import { H3, H2 } from 'is-ui-library'
+import { H3, H2, MaterialIcon } from 'is-ui-library'
 import React, { Component, Fragment } from 'react'
 import styled from 'styled-components'
 
@@ -78,7 +78,6 @@ export default class AssignPage extends Component {
                 <TechPill
                   border
                   status={'unassign'}
-                  avatarURL={closeImage}
                   onClick={() => handleAction('left', 'unassigned', 'warning', id, 0)}
                 />}
               </PillCollection>
