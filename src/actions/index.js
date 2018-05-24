@@ -13,6 +13,8 @@ export const CLAIM_ISSUE = 'CLAIM_ISSUE'
 export const ISSUE_CLAIMED = 'ISSUE_CLAIMED'
 export const ASSIGN_ISSUE = 'ASSIGN_ISSUE'
 export const ISSUE_ASSIGNED = 'ISSUE_ASSIGNED'
+export const CLEAR_MESSAGES = 'CLEAR_MESSAGES'
+export const MESSAGE_CLEARED = 'MESSAGE_CLEARED'
 
 export const loginRequestAction = (userID) => (
   {
@@ -71,14 +73,14 @@ export const issuesLoadedAction = (issues, collectionName) => (
 export const resolveIssueAction = (id) => (
   {
     type: RESOLVE_ISSUE,
-    payload: id
+    payload: id,
  }
 )
 
 export const issueResolvedAction = (issue) => (
   {
     type: ISSUE_RESOLVED,
-    payload: issue
+    payload: issue,
   }
 )
 
@@ -92,21 +94,21 @@ export const loadUsersAction = (techName) => (
 export const usersLoadedAction = (users) => (
   {
     type: USERS_LOADED,
-    payload: users
+    payload: users,
   }
 )
 
 export const claimIssueAction = (id) => (
   {
     type: CLAIM_ISSUE,
-    payload: id
+    payload: id,
   }
 )
 
 export const issueClaimedAction = (issue) => (
   {
     type: ISSUE_CLAIMED,
-    payload: issue
+    payload: issue,
   }
 )
 
@@ -123,4 +125,17 @@ export const issueAssignedAction = (issue) => (
     type: ISSUE_ASSIGNED,
     payload: issue,
   }
+)
+
+export const clearMessagesAction = () => (
+  {
+    type: CLEAR_MESSAGES,
+  }
+)
+
+export const messageClearedAction = (message) => (
+   {
+     type: MESSAGE_CLEARED,
+     payload: message,
+   }
 )

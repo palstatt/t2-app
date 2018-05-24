@@ -21,8 +21,8 @@
       "version": 18.3,
       "company": "SO Logistics",
       "resolved": false,
-      "claimed": true,
-      "assigned_to": 142
+      "claimed": false,
+      "assigned_to": 0
     },
     {
       "id": 3,

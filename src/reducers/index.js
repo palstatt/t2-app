@@ -2,6 +2,7 @@ import {
   ALL_ISSUES_LOADED,
   ASSIGN_ISSUE,
   CLAIM_ISSUE,
+  CLEAR_MESSAGES,
   ERROR_QUERY,
   ISSUES_LOADED,
   ISSUE_RESOLVED,
@@ -10,6 +11,7 @@ import {
   LOAD_USERS,
   LOGIN_FULFILLED,
   LOGIN_REQUEST,
+  MESSAGE_CLEARED,
   RESOLVE_ISSUE,
   USERS_LOADED
 } from '../actions';
@@ -65,7 +67,6 @@ export default function issuesReducer(state = initialState, action) {
         ...state,
         loading: false,
         [action.collectionName]: action.payload,
-        messages: [],
         lastLoaded: action.loadedAt,
       }
     case RESOLVE_ISSUE:
@@ -100,6 +101,17 @@ export default function issuesReducer(state = initialState, action) {
       return {
         ...state,
         unclaimedIssues: state.unclaimedIssues.filter(({id}) => id !== action.payload),
+      }
+    case CLEAR_MESSAGES:
+      return {
+        ...state,
+        loading: true,
+      }
+    case MESSAGE_CLEARED:
+      return {
+        ...state,
+        loading: false,
+        messages: state.messages.filter(message => message !== action.payload),
       }
     default:
       return state

@@ -1,12 +1,22 @@
-import { Observable } from 'rxjs-compat'
-import { combineEpics, ofType } from 'redux-observable'
-import { pipe } from 'rxjs'
-import { flatMap, map, catchError, debounceTime, mergeMap, switchMap } from 'rxjs/operators'
 import { ajax } from 'rxjs/ajax'
+import { combineEpics, ofType } from 'redux-observable'
+import {
+  flatMap,
+  map,
+  catchError,
+  debounceTime,
+  mergeMap,
+  switchMap,
+  pluck,
+  distinctUntilChanged,
+  concatMap,
+} from 'rxjs/operators';
+import { of, from } from 'rxjs';
 
 import {
   ASSIGN_ISSUE,
   CLAIM_ISSUE,
+  CLEAR_MESSAGES,
   LOAD_ALL_ISSUES,
   LOAD_ISSUES,
   LOAD_USERS,
@@ -20,30 +30,36 @@ import {
   issuesLoadedAction,
   loadAllIssuesAction,
   loginFulfilledAction,
+  messageClearedAction,
   usersLoadedAction
 } from '../actions';
+import { bugMessage } from '../api';
 
-const defaultErrorMessage = {
-  text: 'Unknown Error',
-  name: 'Caught unknown error'
-}
+
+const requestConfig = {
+  createXHR: () => new XMLHttpRequest(),
+  responseType: 'json'
+ }
 
 const responseConfig = { 'Content-Type': 'application/json' }
 
 const handleError = (error, type) => (
-  Observable.from(errorQueryAction(error, type))
+  of(errorQueryAction(error, type))
 )
-
-// THROW ERROR ON NULL OR REMOVE GETJSON CALL AND HANDLE REQUESTS
-// AFTER FILTERING OUT 404 AND OTHER ERRORS
 
 //epics
 const loginRequestEpic = action$ =>
   action$.pipe(
     ofType(LOGIN_REQUEST),
     flatMap(({payload, type}) =>
-      ajax.getJSON(`${process.env.REACT_APP_API_URL}/users?id=${payload}`).pipe(
-        map(res => loginFulfilledAction(res)),
+      ajax({
+        url: `${process.env.REACT_APP_API_URL}/users?id=${payload}`,
+        ...requestConfig
+      }).pipe(
+        pluck('response'),
+        mergeMap(response => from(response).pipe(
+          map(user => loginFulfilledAction(user))
+        )),
         catchError(error => handleError(error, type))
       )
     )
@@ -53,8 +69,12 @@ const loadAllIssuesEpic = action$ =>
   action$.pipe(
     ofType(LOAD_ALL_ISSUES),
     flatMap(({payload, type}) =>
-      ajax.getJSON(`${process.env.REACT_APP_API_URL}/issues`).pipe(
-        map(res => allIssuesLoadedAction(res)),
+      ajax({
+        url: `${process.env.REACT_APP_API_URL}/issues`,
+        ...requestConfig
+      }).pipe(
+        pluck('response'),
+        map(issues => allIssuesLoadedAction(issues)),
         catchError(error => handleError(error, type))
       )
     )
@@ -65,8 +85,12 @@ const loadIssuesEpic = action$ =>
     ofType(LOAD_ISSUES),
     debounceTime(500),
     flatMap(({payload, collectionName, type}) =>
-      ajax.getJSON(`${process.env.REACT_APP_API_URL}/${payload}`).pipe(
-        map(res => issuesLoadedAction(res, collectionName)),
+      ajax({
+        url: `${process.env.REACT_APP_API_URL}/${payload}`,
+        ...requestConfig
+      }).pipe(
+        pluck('response'),
+        map(issues => issuesLoadedAction(issues, collectionName)),
         catchError(error => handleError(error, type))
       )
     )
@@ -76,8 +100,12 @@ const loadAvatarsEpic = action$ =>
   action$.pipe(
     ofType(LOAD_USERS),
     flatMap(({payload, type}) =>
-      ajax.getJSON(`${process.env.REACT_APP_API_URL}/users`).pipe(
-        map(url => usersLoadedAction(url)),
+      ajax({
+        url: `${process.env.REACT_APP_API_URL}/users`,
+        ...requestConfig
+      }).pipe(
+        pluck('response'),
+        map(users => usersLoadedAction(users)),
         catchError(error => handleError(error, type))
       )
     )
@@ -92,7 +120,8 @@ const resolveIssueEpic = action$ =>
           { resolved: true },
           responseConfig
         ).pipe(
-          map(({response}) => issueResolvedAction(response)),
+          pluck('response'),
+          map(issue => issueResolvedAction(issue)),
           catchError(error => handleError(error, type))
         )
       )
@@ -107,9 +136,10 @@ const claimIssueEpic = (action$, state$) =>
         { claimed: true, assigned_to: state$.value.currentUser.id },
         responseConfig
       ).pipe(
-        mergeMap(({response}) =>
-          Observable.of(
-            issueClaimedAction(response),
+        pluck('response'),
+        mergeMap(issue =>
+          of(
+            issueClaimedAction(issue),
             loadAllIssuesAction()
           )
         ),
@@ -122,20 +152,46 @@ const assignIssueEpic = action$ =>
   action$.pipe(
     ofType(ASSIGN_ISSUE),
     switchMap(({payload, assignTo, type}) =>
-      ajax.patch(`${process.env.REACT_APP_API_URL}/issues/${payload}`,
+      ajax.patch(
+        `${process.env.REACT_APP_API_URL}/issues/${payload}`,
         { claimed: !(assignTo === 0), assigned_to: assignTo },
         responseConfig
       ).pipe(
-      mergeMap(({response}) =>
-        Observable.of(
-          issueAssignedAction(response),
-          loadAllIssuesAction()
-        )
+        pluck('response'),
+        mergeMap(issue =>
+          of(
+            issueAssignedAction(issue),
+            loadAllIssuesAction()
+          )
       ),
       catchError(error => handleError(error, type))
+      )
     )
   )
-)
+
+const clearMessagesEpic = (action$, state$) =>
+  action$.pipe(
+    ofType(CLEAR_MESSAGES),
+    switchMap(({type}) =>
+      from(state$).pipe(
+        pluck('messages'),
+        distinctUntilChanged(),
+        concatMap(message =>
+          from(message).pipe(
+            mergeMap(message =>
+              ajax.post(
+                process.env.REACT_APP_SLACK_URL,
+                bugMessage(message.text.name, message.actionSource, state$.value.currentUser.name),
+              ).pipe(
+                map(() => messageClearedAction(message)),
+                catchError(error => handleError(error, type))
+              )
+            )
+          )
+        )
+      )
+    )
+  )
 
 export const rootEpic = combineEpics(loginRequestEpic,
                                      loadAllIssuesEpic,
@@ -143,4 +199,5 @@ export const rootEpic = combineEpics(loginRequestEpic,
                                      loadAvatarsEpic,
                                      resolveIssueEpic,
                                      claimIssueEpic,
-                                     assignIssueEpic)
+                                     assignIssueEpic,
+                                     clearMessagesEpic)

@@ -72,7 +72,7 @@ class Header extends Component {
   }
 
   render() {
-    const { currentStatus, users, navigationComponent, currentUser } = this.props
+    const { users, navigationComponent, currentUser } = this.props
     const theme = this.createTheme()
     return (
       <HeaderContainer>
