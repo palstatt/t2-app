@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import React, { Component, Fragment } from 'react';
 import moment from 'moment';
 import styled, { keyframes } from 'styled-components';
-import { Header, ClaimedCard, UnclaimedCard, ErrorMessage } from '../../components';
+import { Header, ClaimedCard, UnclaimedCard, ErrorMessage, StatusCard } from '../../components';
 import {
   loadAllIssuesAction,
   loadIssuesAction,
@@ -118,6 +118,7 @@ class IssuesQueue extends Component {
   state = {
     focusedCard: null,
     page: 'unclaimed',
+    showStatusCard: true,
   }
 
   componentDidMount() {
@@ -140,7 +141,7 @@ class IssuesQueue extends Component {
 
   render() {
     const { unclaimedIssues, claimedIssues, loading, lastLoaded, messages } = this.props
-    const { page } = this.state
+    const { page, showStatusCard } = this.state
     const values = [ unclaimedIssues.length, claimedIssues.length ]
     return (
       <Fragment>
@@ -166,6 +167,9 @@ class IssuesQueue extends Component {
         </LoadedTimeContainer>
         {messages.length > 0 &&
           <ErrorMessage />
+        }
+        {showStatusCard &&
+          <StatusCard />
         }
       </Fragment>
     )

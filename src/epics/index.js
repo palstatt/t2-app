@@ -12,7 +12,6 @@ import {
   concatMap,
 } from 'rxjs/operators';
 import { of, from } from 'rxjs';
-
 import {
   ASSIGN_ISSUE,
   CLAIM_ISSUE,
