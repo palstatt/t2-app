@@ -13,7 +13,9 @@ import {
   LOGIN_REQUEST,
   MESSAGE_CLEARED,
   RESOLVE_ISSUE,
-  USERS_LOADED
+  USERS_LOADED,
+  CHANGE_STATUS,
+  STATUS_CHANGED
 } from '../actions';
 
 const initialState = {
@@ -112,6 +114,17 @@ export default function issuesReducer(state = initialState, action) {
         ...state,
         loading: false,
         messages: state.messages.filter(message => message !== action.payload),
+      }
+    case CHANGE_STATUS:
+      return {
+        ...state,
+        loading: true,
+        currentUser: { ...state.currentUser, status: action.payload },
+      }
+    case STATUS_CHANGED:
+      return {
+        ...state,
+        loading: false,
       }
     default:
       return state

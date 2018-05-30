@@ -12,8 +12,10 @@ import {
   concatMap,
 } from 'rxjs/operators';
 import { of, from } from 'rxjs';
+
 import {
   ASSIGN_ISSUE,
+  CHANGE_STATUS,
   CLAIM_ISSUE,
   CLEAR_MESSAGES,
   LOAD_ALL_ISSUES,
@@ -28,8 +30,10 @@ import {
   issueResolvedAction,
   issuesLoadedAction,
   loadAllIssuesAction,
+  loadUsersAction,
   loginFulfilledAction,
   messageClearedAction,
+  statusChangedAction,
   usersLoadedAction
 } from '../actions';
 import { bugMessage } from '../api';
@@ -95,7 +99,7 @@ const loadIssuesEpic = action$ =>
     )
   )
 
-const loadAvatarsEpic = action$ =>
+const loadUsersEpic = action$ =>
   action$.pipe(
     ofType(LOAD_USERS),
     flatMap(({payload, type}) =>
@@ -192,11 +196,34 @@ const clearMessagesEpic = (action$, state$) =>
     )
   )
 
+const changeStatusEpic = (action$, state$) =>
+  action$.pipe(
+    ofType(CHANGE_STATUS),
+    debounceTime(500),
+    switchMap(({payload, type}) =>
+      ajax.patch(
+        `${process.env.REACT_APP_API_URL}/users/${state$.value.currentUser.id}`,
+        { status: payload },
+        responseConfig
+      ).pipe(
+        pluck('response'),
+        mergeMap(() =>
+          of(
+            statusChangedAction(),
+            loadUsersAction()
+          )
+        ),
+        catchError(error => handleError(error, type))
+      )
+    )
+  )
+
 export const rootEpic = combineEpics(loginRequestEpic,
                                      loadAllIssuesEpic,
                                      loadIssuesEpic,
-                                     loadAvatarsEpic,
+                                     loadUsersEpic,
                                      resolveIssueEpic,
                                      claimIssueEpic,
                                      assignIssueEpic,
-                                     clearMessagesEpic)
+                                     clearMessagesEpic,
+                                     changeStatusEpic)

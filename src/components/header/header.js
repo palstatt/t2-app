@@ -3,6 +3,15 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { ComplexButton, Badge, MaterialIcon, colors } from 'is-ui-library'
 import { connect } from 'react-redux'
+import { getColor } from '../../functions'
+
+const themeCreator = fg => (
+  {
+    fg,
+    check: colors.black,
+    bg: colors.black,
+  }
+)
 
 const HeaderContainer = styled.header`
   position: fixed;
@@ -47,38 +56,18 @@ class Header extends Component {
 
   createTheme = () => {
     const { currentUser } = this.props
-    switch(currentUser.status){
-      case 'available':
-        return {
-          bg: colors.black,
-          fg: colors.complete,
-        }
-      case 'busy':
-        return {
-          bg: colors.black,
-          fg: colors.attention,
-        }
-      case 'at lunch':
-        return {
-          bg: colors.black,
-          fg: colors.warning,
-        }
-      default:
-        return {
-          bg: colors.black,
-          fg: colors.white
-        }
-    }
+    return themeCreator(getColor(currentUser.status))
   }
 
   render() {
-    const { users, navigationComponent, currentUser } = this.props
+    const { users, navigationComponent, currentUser, handleButtonClick, showMenu } = this.props
     const theme = this.createTheme()
     return (
       <HeaderContainer>
         <TopContainer>
-          <MaterialIcon large>menu</MaterialIcon>
+          <MaterialIcon large onClick={() => showMenu()}>menu</MaterialIcon>
           <ComplexButton
+            onClick={() => handleButtonClick()}
             customTheme={theme}
             label={currentUser.status || 'loading'}
             childComponent={<AvailableTechsBadge

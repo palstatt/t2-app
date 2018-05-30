@@ -8,8 +8,10 @@ const getColor = status => {
       return colors.attention
     case 'at lunch':
       return colors.warning
+    case 'out of office':
+      return colors.warning
     default:
-      return ''
+      return colors.white
   }
 }
 

@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 import React, { Component, Fragment } from 'react';
 import moment from 'moment';
 import styled, { keyframes } from 'styled-components';
-import { Header, ClaimedCard, UnclaimedCard, ErrorMessage, StatusCard } from '../../components';
+import posed, { PoseGroup } from 'react-pose'
+import { Header, ClaimedCard, UnclaimedCard, ErrorMessage, StatusCard, Scrim } from '../../components';
 import {
   loadAllIssuesAction,
   loadIssuesAction,
@@ -118,7 +119,7 @@ class IssuesQueue extends Component {
   state = {
     focusedCard: null,
     page: 'unclaimed',
-    showStatusCard: true,
+    showStatusCard: false,
   }
 
   componentDidMount() {
@@ -140,13 +141,15 @@ class IssuesQueue extends Component {
   }
 
   render() {
-    const { unclaimedIssues, claimedIssues, loading, lastLoaded, messages } = this.props
+    const { unclaimedIssues, claimedIssues, loading, lastLoaded, messages, showMenu } = this.props
     const { page, showStatusCard } = this.state
     const values = [ unclaimedIssues.length, claimedIssues.length ]
     return (
       <Fragment>
         <Header
+          handleButtonClick={() => this.setState(({showStatusCard}) => ({showStatusCard: !showStatusCard}))}
           currentStatus={'available'}
+          showMenu={() => showMenu()}
           navigationComponent={<NavBar
                                   navItems={navigationOptions(values)}
                                   onPageChange={this.handleLoadIssues}
@@ -168,9 +171,13 @@ class IssuesQueue extends Component {
         {messages.length > 0 &&
           <ErrorMessage />
         }
-        {showStatusCard &&
-          <StatusCard />
-        }
+        <PoseGroup>
+          {showStatusCard &&
+            <Scrim key={2}>
+              <StatusCard onRemove={() => this.setState({showStatusCard: false})} key={1} />
+            </Scrim>
+          }
+        </PoseGroup>
       </Fragment>
     )
   }
@@ -191,7 +198,7 @@ const mapDispatch = dispatch => {
     loginRequest: (id) => dispatch(loginRequestAction(id)),
     loadAllIssues: () => dispatch(loadAllIssuesAction()),
     loadIssues: (filter, collectionName) => dispatch(loadIssuesAction(filter, collectionName)),
-    loadUsers: (filter) => dispatch(loadUsersAction(filter))
+    loadUsers: (filter) => dispatch(loadUsersAction(filter)),
   }
 }
 

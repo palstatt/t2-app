@@ -15,6 +15,8 @@ export const ASSIGN_ISSUE = 'ASSIGN_ISSUE'
 export const ISSUE_ASSIGNED = 'ISSUE_ASSIGNED'
 export const CLEAR_MESSAGES = 'CLEAR_MESSAGES'
 export const MESSAGE_CLEARED = 'MESSAGE_CLEARED'
+export const CHANGE_STATUS = 'CHANGE_STATUS'
+export const STATUS_CHANGED = 'STATUS_CHANGED'
 
 export const loginRequestAction = (userID) => (
   {
@@ -138,4 +140,17 @@ export const messageClearedAction = (message) => (
      type: MESSAGE_CLEARED,
      payload: message,
    }
+)
+
+export const changeStatusAction = (status) => (
+  {
+    type: CHANGE_STATUS,
+    payload: status,
+  }
+)
+
+export const statusChangedAction = () => (
+  {
+    type: STATUS_CHANGED,
+  }
 )
