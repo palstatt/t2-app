@@ -3,6 +3,8 @@ export const LOGIN_FULFILLED = 'LOGIN_FULFILLED'
 export const LOAD_ISSUES = 'LOAD_ISSUES'
 export const LOAD_ALL_ISSUES = 'LOAD_ALL_ISSUES'
 export const ALL_ISSUES_LOADED = 'ALL_ISSUES_LOADED'
+export const LOAD_FOLLOW_UP_ISSUES = 'LOAD_FOLLOW_UP_ISSUES'
+export const FOLLOW_UP_ISSUES_LOADED = 'FOLLOW_UP_ISSUES_LOADED'
 export const ERROR_QUERY = 'ERROR_QUERY'
 export const RESOLVE_ISSUE = 'RESOLVE_ISSUE'
 export const ISSUES_LOADED = 'ISSUES_LOADED'
@@ -17,11 +19,15 @@ export const CLEAR_MESSAGES = 'CLEAR_MESSAGES'
 export const MESSAGE_CLEARED = 'MESSAGE_CLEARED'
 export const CHANGE_STATUS = 'CHANGE_STATUS'
 export const STATUS_CHANGED = 'STATUS_CHANGED'
+export const UNASSIGN_ISSUE = 'UNASSIGN_ISSUE'
+export const ISSUE_UNASSIGNED = 'ISSUE_UNASSIGNED'
+export const MARK_FOLLOW_UP = 'MARK_FOLLOW_UP'
+export const FOLLOW_UP_MARKED = 'FOLLOW_UP_MARKED'
+export const NAVIGATE_TO_PAGE = 'NAVIGATE_TO_PAGE'
 
-export const loginRequestAction = (userID) => (
+export const loginRequestAction = () => (
   {
     type: LOGIN_REQUEST,
-    payload: userID,
   }
 )
 
@@ -72,10 +78,11 @@ export const issuesLoadedAction = (issues, collectionName) => (
   }
 )
 
-export const resolveIssueAction = (id) => (
+export const resolveIssueAction = (notes, id) => (
   {
     type: RESOLVE_ISSUE,
-    payload: id,
+    payload: notes,
+		issueId: id,
  }
 )
 
@@ -86,10 +93,9 @@ export const issueResolvedAction = (issue) => (
   }
 )
 
-export const loadUsersAction = (techName) => (
+export const loadUsersAction = () => (
   {
     type: LOAD_USERS,
-    payload: techName,
   }
 )
 
@@ -97,6 +103,19 @@ export const usersLoadedAction = (users) => (
   {
     type: USERS_LOADED,
     payload: users,
+  }
+)
+
+export const loadFollowUpIssuesAction = () => (
+  {
+    type: LOAD_FOLLOW_UP_ISSUES,
+  }
+)
+
+export const followUpIssuesLoadedAction = (issues) => (
+  {
+    type: FOLLOW_UP_ISSUES_LOADED,
+    payload: issues,
   }
 )
 
@@ -142,15 +161,49 @@ export const messageClearedAction = (message) => (
    }
 )
 
-export const changeStatusAction = (status) => (
+export const changeStatusAction = (statusId) => (
   {
     type: CHANGE_STATUS,
-    payload: status,
+    payload: statusId,
   }
 )
 
 export const statusChangedAction = () => (
   {
-    type: STATUS_CHANGED,
+		type: STATUS_CHANGED,
+  }
+)
+
+export const unassignIssueAction = (id) => (
+	{
+		type: UNASSIGN_ISSUE,
+		payload: id,
+	}
+)
+
+export const issueUnassignedAction = () => (
+	{
+		type: ISSUE_UNASSIGNED,
+	}
+)
+
+export const markFollowUpAction = (id, notes) => (
+	{
+		type: MARK_FOLLOW_UP,
+		issueId: id,
+		payload: notes,
+	}
+)
+
+export const followUpMarkedAction = () => (
+	{
+		type: FOLLOW_UP_MARKED,
+	}
+)
+
+export const navigateToPageAction = (page) => (
+  {
+    type: NAVIGATE_TO_PAGE,
+    payload: page,
   }
 )

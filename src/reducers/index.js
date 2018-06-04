@@ -1,21 +1,30 @@
 import {
   ALL_ISSUES_LOADED,
   ASSIGN_ISSUE,
+  CHANGE_STATUS,
   CLAIM_ISSUE,
   CLEAR_MESSAGES,
   ERROR_QUERY,
+  FOLLOW_UP_MARKED,
   ISSUES_LOADED,
+  ISSUE_ASSIGNED,
+  ISSUE_CLAIMED,
   ISSUE_RESOLVED,
+  ISSUE_UNASSIGNED,
   LOAD_ALL_ISSUES,
   LOAD_ISSUES,
+  LOAD_FOLLOW_UP_ISSUES,
+  FOLLOW_UP_ISSUES_LOADED,
   LOAD_USERS,
   LOGIN_FULFILLED,
   LOGIN_REQUEST,
+  MARK_FOLLOW_UP,
   MESSAGE_CLEARED,
+  NAVIGATE_TO_PAGE,
   RESOLVE_ISSUE,
-  USERS_LOADED,
-  CHANGE_STATUS,
-  STATUS_CHANGED
+  STATUS_CHANGED,
+  UNASSIGN_ISSUE,
+  USERS_LOADED
 } from '../actions';
 
 const initialState = {
@@ -24,9 +33,18 @@ const initialState = {
   unclaimedIssues: [],
   claimedIssues: [],
   resolvedIssues: [],
+  followUpIssues: [],
   users: [],
   currentUser: {},
   lastLoaded: null,
+  currentPage: 'issuesQueue'
+}
+
+const filterIssues = (data, logic) => {
+	if (data) {
+		return data.filter(logic)
+	}
+	return []
 }
 
 export default function issuesReducer(state = initialState, action) {
@@ -52,8 +70,8 @@ export default function issuesReducer(state = initialState, action) {
       return {
         ...state,
         loading: false,
-        unclaimedIssues: action.payload.filter(({claimed}) => !claimed),
-        claimedIssues: action.payload.filter(({claimed}) => claimed),
+				unclaimedIssues: filterIssues(action.payload, issue => issue.IssueStatus.id === 1),
+				claimedIssues: filterIssues(action.payload, issue => issue.IssueStatus.id === 2),
         lastLoaded: action.loadedAt,
       }
     case ERROR_QUERY:
@@ -70,6 +88,17 @@ export default function issuesReducer(state = initialState, action) {
         loading: false,
         [action.collectionName]: action.payload,
         lastLoaded: action.loadedAt,
+      }
+    case LOAD_FOLLOW_UP_ISSUES:
+      return {
+        ...state,
+        loading: true,
+      }
+    case FOLLOW_UP_ISSUES_LOADED:
+      return {
+        ...state,
+        loading: false,
+        followUpIssues: [...state.followUpIssues, action.payload],
       }
     case RESOLVE_ISSUE:
       return {
@@ -97,13 +126,25 @@ export default function issuesReducer(state = initialState, action) {
     case CLAIM_ISSUE:
       return {
         ...state,
-        unclaimedIssues: state.unclaimedIssues.filter(({id}) => id !== action.payload),
-      }
+				unclaimedIssues: state.unclaimedIssues.filter(({ id }) => id !== action.payload),
+				loading: true,
+			}
+		case ISSUE_CLAIMED:
+			return {
+				...state,
+				loading: false,
+			}
     case ASSIGN_ISSUE:
       return {
         ...state,
-        unclaimedIssues: state.unclaimedIssues.filter(({id}) => id !== action.payload),
-      }
+				unclaimedIssues: state.unclaimedIssues.filter(({ id }) => id !== action.payload),
+				loading: true,
+			}
+		case ISSUE_ASSIGNED:
+			return {
+				...state,
+				loading: false,
+			}
     case CLEAR_MESSAGES:
       return {
         ...state,
@@ -119,12 +160,44 @@ export default function issuesReducer(state = initialState, action) {
       return {
         ...state,
         loading: true,
-        currentUser: { ...state.currentUser, status: action.payload },
+				currentUser: {
+					...state.currentUser, EmployeeStatus: {
+						...state.currentUser.EmployeeStatus,
+						id: action.payload
+					},
+				}
       }
     case STATUS_CHANGED:
       return {
         ...state,
         loading: false,
+			}
+		case UNASSIGN_ISSUE:
+			return {
+				...state,
+				loading: true,
+				claimedIssues: state.claimedIssues.filter(({ id }) => id !== action.payload),
+			}
+		case ISSUE_UNASSIGNED:
+			return {
+				...state,
+				loading: false,
+			}
+		case MARK_FOLLOW_UP:
+			return {
+				...state,
+				loading: true,
+				claimedIssues: state.claimedIssues.filter(({ id }) => id !== action.payload),
+			}
+		case FOLLOW_UP_MARKED:
+			return {
+				...state,
+				loading: false,
+			}
+    case NAVIGATE_TO_PAGE:
+      return {
+        ...state,
+        currentPage: action.payload,
       }
     default:
       return state

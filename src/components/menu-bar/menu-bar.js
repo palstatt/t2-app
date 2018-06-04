@@ -1,20 +1,19 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import posed, { PoseGroup } from 'react-pose'
 import { MaterialIcon, H1, H2, colors } from 'is-ui-library'
-import { Scrim } from '../../components'
+import { connect } from 'react-redux'
+import React, { Component } from 'react'
+import styled from 'styled-components'
+import posed from 'react-pose'
+import { navigateToPageAction } from '../../actions'
 
 const navigationOptions = [
   {
-    text: 'issues queue'
+    text: 'issues queue',
+    page: 'issuesQueue'
   },
   {
-    text: 'my issues'
+    text: 'follow-up',
+    page: 'followUp'
   },
-  {
-    text: 'settings'
-  }
 ]
 
 const wrapperProps = {
@@ -88,7 +87,7 @@ const NavText = styled(H2)`
   color: ${colors.white};
 `
 
-export default class MenuBar extends Component {
+class MenuBar extends Component {
 
   state = {
 
@@ -108,6 +107,11 @@ export default class MenuBar extends Component {
     }
   }
 
+  handleClickNav = (page) => {
+    this.props.changePage(page)
+    this.props.closeMenu()
+  }
+
   render() {
     const { closeMenu } = this.props
     return (
@@ -120,8 +124,11 @@ export default class MenuBar extends Component {
               <CloseButton onClick={() => closeMenu()}/>
               <TitleText>TIER 2</TitleText>
             </HeaderContainer>
-            {navigationOptions.map(({text}) =>
-            <NavContainer key={text}>
+            {navigationOptions.map(({text, page}) =>
+            <NavContainer
+              key={text}
+              onClick={() => this.handleClickNav(page)}
+            >
               <NavText>{text.toUpperCase()}</NavText>
             </NavContainer>
           )}
@@ -130,3 +137,17 @@ export default class MenuBar extends Component {
     )
   }
 }
+
+const mapStateToProps = state => {
+  return {
+    currentPage: state.currentPage
+  }
+}
+
+const mapDispatch = dispatch => {
+  return {
+    changePage: (page) => dispatch(navigateToPageAction(page))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatch)(MenuBar)

@@ -20,8 +20,14 @@ export default class ResolvePage extends Component {
     rendered: true,
   }
 
+	handleType = e => {
+		const { onTypeNotes } = this.props
+		onTypeNotes(e.target.value)
+	}
+
   render() {
     const { rendered } = this.state
+		const { notes } = this.props
     return (
       <AnimateHeightStyled
         height={rendered ? 'auto' : 0}
@@ -32,6 +38,8 @@ export default class ResolvePage extends Component {
               placeholder="Type notes here..."
               label="Notes"
               rows={3}
+							value={notes}
+							onChange={this.handleType}
             />
           </FlexBox>
       </AnimateHeightStyled>

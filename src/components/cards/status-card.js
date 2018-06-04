@@ -1,26 +1,11 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import styled from 'styled-components'
 import posed, { PoseGroup } from 'react-pose'
 import { P, colors, shadows } from 'is-ui-library'
 import { changeStatusAction } from '../../actions'
 import { StatusPill } from '../../components'
-
-const statusOptions = [
-  {
-    text: 'available',
-  },
-  {
-    text: 'busy',
-  },
-  {
-    text: 'out of office',
-  },
-  {
-    text: 'at lunch',
-  }
-]
+import { statuses } from '../../functions'
 
 const containerProps = {
   enter: { y: '0%', staggerChildren: 50 },
@@ -33,7 +18,7 @@ const Container = styled(posed.div(containerProps))`
   align-self: stretch;
   position: fixed;
   width: calc(100% - 16px);
-  bottom: -48px;
+  bottom: -88px;
   left: 8px;
   border-radius: 8px 8px 0 0;
   z-index: 500;
@@ -46,7 +31,7 @@ const ClickContainer = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 24px 8px 56px 8px;
+  padding: 24px 8px 96px 8px;
 `
 
 const HeaderText = styled(P)`
@@ -56,7 +41,7 @@ const HeaderText = styled(P)`
 
 const optionPoseProps = {
   enter: { y: '0%', opacity: 1 },
-  exit: { y: '100%', opacity: 0 }
+  exit: { y: '50%', opacity: 0 }
 }
 
 const OptionPoseContainer = styled(posed.div(optionPoseProps))`
@@ -86,14 +71,15 @@ class StatusCard extends Component {
         <ClickContainer innerRef={wrapperRef => this.wrapperRef = wrapperRef}>
           <HeaderText>I'm currently...</HeaderText>
           <PoseGroup>
-            {statusOptions.map(({text, active}) =>
-              <OptionPoseContainer key={text}>
+            {statuses.map(({name, id}) =>
+              <OptionPoseContainer key={name}>
                 <StatusPill
-                  active={text === currentUser.status}
-                  status={text}
-                  changeStatus={(text) => {
-                    changeStatus(text)
-                    // onRemove()
+									active={id === currentUser.EmployeeStatus.id}
+									status={name}
+									statusId={id}
+                  changeStatus={(id) => {
+										changeStatus(id)
+										onRemove()
                   }}
                 />
               </OptionPoseContainer>

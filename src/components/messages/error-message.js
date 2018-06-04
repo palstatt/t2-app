@@ -23,7 +23,7 @@ const MessagesContainer = styled.div`
   position: fixed;
   z-index: 100;
   padding: 8px;
-  right: 16px;
+  left: 16px;
   bottom: 16px;
   border-radius: 4px;
   transition: .2s ease;

@@ -1,22 +1,13 @@
-import {
-  FlexibleCard,
-  InfoField,
-  IconButton,
-  Accent,
-  H3,
-  colors
-} from 'is-ui-library'
-import { connect } from 'react-redux';
 import React, { Component, Fragment } from 'react'
-import moment from 'moment'
-import styled from 'styled-components'
-
-import AnimateHeight from 'react-animate-height'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import styled from 'styled-components'
+import moment from 'moment'
+import AnimateHeight from 'react-animate-height'
 import posed, { PoseGroup } from 'react-pose'
-
+import { FlexibleCard, InfoField, IconButton, Accent, H3, colors} from "is-ui-library"
 import { AssignPage } from './pages'
-import { assignIssueAction, claimIssueAction } from '../../actions';
+import { assignIssueAction, claimIssueAction } from '../../actions'
 
 const Item = posed.div({
   enter: { opacity: 1, delayChildren: 500 },
@@ -179,7 +170,7 @@ class UnclaimedCard extends Component {
     author: PropTypes.string,
     companyName: PropTypes.string,
     timeCreated: PropTypes.number,
-    version: PropTypes.number,
+    version: PropTypes.string,
   }
 
   static defaultProps = {
@@ -255,7 +246,7 @@ class UnclaimedCard extends Component {
       leaveRight,
       actionColor,
       actionLabel } = this.state
-    const filteredUsers = users.filter(({id}) => id !== currentUserID)
+    const filteredUsers = users.filter(({techId}) => techId !== currentUserID)
     return (
       <FlexibleCard
         inline
@@ -278,7 +269,8 @@ class UnclaimedCard extends Component {
               companyName={companyName}
               claimIssue={(id) => this.handleAction('right', 'claimed', 'complete', claimIssue, id)}
               onClick={expanded ? this.handleCollapse : this.handleExpand}
-            />]}
+            />
+          ]}
         bodyPages=
           {[
             <InitPage />
@@ -287,7 +279,7 @@ class UnclaimedCard extends Component {
               label="assign to"
               id={id}
               userCollection={filteredUsers}
-              handleAction={(direction, label, color, ...params) => this.handleAction(direction, label, color, assignIssue, ...params)}
+              handleAssign={(direction, label, color, ...params) => this.handleAction(direction, label, color, assignIssue, ...params)}
             />
           ]}
         footers=
@@ -317,7 +309,7 @@ const mapStateToProps = state => {
   return {
     issues: state.issues,
     users: state.users,
-    currentUserID: state.currentUser.id,
+    currentUserID: state.currentUser.ID,
   }
 }
 

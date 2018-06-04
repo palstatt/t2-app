@@ -15,7 +15,7 @@ import AnimateHeight from 'react-animate-height'
 import PropTypes from 'prop-types'
 
 import { AssignPage, ResolvePage } from './pages'
-import { assignIssueAction, resolveIssueAction } from '../../actions';
+import { assignIssueAction, resolveIssueAction, unassignIssueAction, markFollowUpAction } from '../../actions';
 import { getColor } from '../../functions'
 
 //reusable styles
@@ -39,6 +39,7 @@ const Avatar = styled.img`
   height: 56px;
   border-radius: 50%;
   object-fit: cover;
+	overflow: hidden;
 `
 
 const AvatarContainer = styled.div`
@@ -79,7 +80,8 @@ const Header = ({
   companyName,
   userStatus,
   onPageChange,
-  onCollapse
+	onCollapse,
+	supportTechName
 }) => (
   <HeaderContainer onClick={onCollapse}>
     <FlexBox>
@@ -108,6 +110,7 @@ const Header = ({
       <AvatarContainer>
         <Avatar
           src={supportTechAvatar}
+					alt={supportTechName}
           status={userStatus}
           onClick={(e) => {
             onPageChange(1)
@@ -120,7 +123,7 @@ const Header = ({
 )
 
 
-const InitFooter = ({timeCreated, version, id, resolveIssue}) => (
+const InitFooter = ({ timeCreated, version, notes, id, resolveIssue, markFollowUp }) => (
   <FooterContainer>
     <FlexBox vertical centerJustify leftAlign>
       <SecondaryInfo>{timeCreated}</SecondaryInfo>
@@ -132,13 +135,13 @@ const InitFooter = ({timeCreated, version, id, resolveIssue}) => (
         mobile
         icon="snooze"
         secondary
-        onClick={(id) => console.log(id)}
+        onClick={() => markFollowUp(id, notes)}
       />
       <IconButton
         noLabel
         mobile
         icon="check"
-        onClick={() => resolveIssue(id)}
+        onClick={() => resolveIssue(notes, id)}
       />
     </ButtonFlexBox>
   </FooterContainer>
@@ -174,6 +177,7 @@ class ClaimedCard extends Component {
     actionColor: 'primary',
     reassignTo: '',
     reassigned: false,
+		notes: '',
   }
 
   static propTypes = {
@@ -254,6 +258,10 @@ class ClaimedCard extends Component {
     })
   }
 
+	handleTypeNotes = notes => {
+		this.setState({notes})
+	}
+
   render() {
     const {
       id,
@@ -265,11 +273,15 @@ class ClaimedCard extends Component {
       version,
       users,
       assignedTo,
-      assignIssue,
+			assignIssue,
+			unassignIssue,
+			markFollowUp,
+      resolveIssue,
       ...props
       } = this.props
     const {
       expanded,
+			notes,
       currentPage,
       leaveRight,
       leaveLeft,
@@ -278,8 +290,8 @@ class ClaimedCard extends Component {
       reassignTo,
       reassigned
       } = this.state
-    const assignedTech = users.find(user => user.id === Number(assignedTo))
-    const filteredUsers = users.filter(user => user.id !== assignedTech.id)
+    const assignedTech = users.find(user => user.techId === Number(assignedTo))
+    const filteredUsers = users.filter(user => user.techId !== assignedTech.techId)
     return (
       <FlexibleCard
         inline
@@ -295,8 +307,9 @@ class ClaimedCard extends Component {
             <Header
               expanded={expanded}
               issue={issue}
-              supportTechAvatar={assignedTech.image_url}
-              userStatus={assignedTech.status}
+              supportTechAvatar={assignedTech ? assignedTech.imageUrl : ''}
+							supportTechName={assignedTech ? assignedTech.name : ''}
+              userStatus={assignedTech ? assignedTech.status : 1}
               author={author}
               companyName={companyName}
               onPageChange={(page) => this.handlePageChange(page)}
@@ -305,7 +318,7 @@ class ClaimedCard extends Component {
           ]}
         bodyPages=
         {[
-          <ResolvePage expanded={expanded}/>
+					<ResolvePage expanded={expanded} notes={notes} onTypeNotes={this.handleTypeNotes} />
           ,
           <AssignPage
             label="reassign to"
@@ -315,17 +328,20 @@ class ClaimedCard extends Component {
             reassigned={reassigned}
             reassignTo={reassignTo}
             handleReassign={(userName, ...params) => this.handleReassign(userName, ...params)}
-            handleAction={(direction, label, color, ...params) => this.handleAction(direction, label, color, assignIssue, ...params)}
+						handleAssign={(direction, label, color, ...params) => this.handleAction(direction, label, color, assignIssue, ...params)}
+						handleUnassign={(direction, label, color, ...params) => this.handleAction(direction, label, color, unassignIssue, ...params)}
           />
         ]}
         footers=
         {[
-          <InitFooter
-            id={id}
-            expanded={expanded}
-            timeCreated={moment.unix(timeCreated).fromNow()}
-            version={version}
-            resolveIssue={props.resolveIssue}
+					<InitFooter
+						id={id}
+						expanded={expanded}
+						timeCreated={moment.unix(timeCreated).fromNow()}
+						version={version}
+						notes={notes}
+						markFollowUp={(...params) => this.handleAction('right', 'follow up', 'attention', assignIssue, ...params)}
+            resolveIssue={(...params) => this.handleAction('right', 'resolved', 'complete', resolveIssue, ...params)}
           />
           ,
           <ResolveFooter
@@ -348,8 +364,10 @@ const mapStateToProps = state => {
 
 const mapDispatch = dispatch => {
   return {
-    resolveIssue: (id) => dispatch(resolveIssueAction(id)),
-    assignIssue: (issueID, techID) => dispatch(assignIssueAction(issueID, techID)),
+    resolveIssue: (notes, id) => dispatch(resolveIssueAction(notes, id)),
+		assignIssue: (issueID, techID) => dispatch(assignIssueAction(issueID, techID)),
+		unassignIssue: (issueID) => dispatch(unassignIssueAction(issueID)),
+		markFollowUp: (issueID, notes) => dispatch(markFollowUpAction(issueID, notes)),
   }
 }
 

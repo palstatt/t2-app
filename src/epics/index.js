@@ -12,7 +12,6 @@ import {
   concatMap,
 } from 'rxjs/operators';
 import { of, from } from 'rxjs';
-
 import {
   ASSIGN_ISSUE,
   CHANGE_STATUS,
@@ -22,8 +21,11 @@ import {
   LOAD_ISSUES,
   LOAD_USERS,
   LOGIN_REQUEST,
-  RESOLVE_ISSUE,
-  allIssuesLoadedAction,
+	RESOLVE_ISSUE,
+	UNASSIGN_ISSUE,
+	MARK_FOLLOW_UP,
+	allIssuesLoadedAction,
+	loginRequestAction,
   errorQueryAction,
   issueAssignedAction,
   issueClaimedAction,
@@ -34,10 +36,15 @@ import {
   loginFulfilledAction,
   messageClearedAction,
   statusChangedAction,
-  usersLoadedAction
+	usersLoadedAction,
+	issueUnassignedAction,
+	followUpMarkedAction
 } from '../actions';
 import { bugMessage } from '../api';
 
+const baseUrl = 'http://localhost:3001/'
+
+const debounceInterval = 100
 
 const requestConfig = {
   createXHR: () => new XMLHttpRequest(),
@@ -56,13 +63,11 @@ const loginRequestEpic = action$ =>
     ofType(LOGIN_REQUEST),
     flatMap(({payload, type}) =>
       ajax({
-        url: `${process.env.REACT_APP_API_URL}/users?id=${payload}`,
+        url: `${baseUrl}employees/current`,
         ...requestConfig
       }).pipe(
-        pluck('response'),
-        mergeMap(response => from(response).pipe(
-          map(user => loginFulfilledAction(user))
-        )),
+		pluck('response'),
+        map(user => loginFulfilledAction(user)),
         catchError(error => handleError(error, type))
       )
     )
@@ -70,13 +75,14 @@ const loginRequestEpic = action$ =>
 
 const loadAllIssuesEpic = action$ =>
   action$.pipe(
-    ofType(LOAD_ALL_ISSUES),
-    flatMap(({payload, type}) =>
+		ofType(LOAD_ALL_ISSUES),
+		debounceTime(debounceInterval),
+    switchMap(({payload, type}) =>
       ajax({
-        url: `${process.env.REACT_APP_API_URL}/issues`,
+			url: `${baseUrl}tier2/issues/current`,
         ...requestConfig
       }).pipe(
-        pluck('response'),
+		pluck('response'),
         map(issues => allIssuesLoadedAction(issues)),
         catchError(error => handleError(error, type))
       )
@@ -86,13 +92,14 @@ const loadAllIssuesEpic = action$ =>
 const loadIssuesEpic = action$ =>
   action$.pipe(
     ofType(LOAD_ISSUES),
-    debounceTime(500),
+    debounceTime(debounceInterval),
     flatMap(({payload, collectionName, type}) =>
       ajax({
-        url: `${process.env.REACT_APP_API_URL}/${payload}`,
+        url: `${baseUrl}tier2/issues/unresolved${payload}`,
         ...requestConfig
       }).pipe(
         pluck('response'),
+		pluck('data'),
         map(issues => issuesLoadedAction(issues, collectionName)),
         catchError(error => handleError(error, type))
       )
@@ -102,9 +109,9 @@ const loadIssuesEpic = action$ =>
 const loadUsersEpic = action$ =>
   action$.pipe(
     ofType(LOAD_USERS),
-    flatMap(({payload, type}) =>
+    flatMap(({type}) =>
       ajax({
-        url: `${process.env.REACT_APP_API_URL}/users`,
+        url: `${baseUrl}employees/status/tier2`,
         ...requestConfig
       }).pipe(
         pluck('response'),
@@ -117,14 +124,36 @@ const loadUsersEpic = action$ =>
 const resolveIssueEpic = action$ =>
    action$.pipe(
      ofType(RESOLVE_ISSUE),
-     flatMap(({payload, type}) =>
-        ajax.patch(
-          `${process.env.REACT_APP_API_URL}/issues/${payload}`,
-          { resolved: true },
-          responseConfig
+     flatMap(({payload, issueId, type}) =>
+        ajax.post(
+          `${baseUrl}tier2/issues/${issueId}/resolve?async=true&notes=${payload}`,
         ).pipe(
           pluck('response'),
-          map(issue => issueResolvedAction(issue)),
+          mergeMap(issue =>
+            of(
+              issueResolvedAction(issue),
+              loadAllIssuesAction()
+            )
+          ),
+          catchError(error => handleError(error, type))
+        )
+      )
+  )
+
+const markFollowUpEpic = action$ =>
+   action$.pipe(
+     ofType(MARK_FOLLOW_UP),
+     flatMap(({issueId, payload, type}) =>
+        ajax.post(
+          `${baseUrl}tier2/issues/${issueId}/needsfollowup?async=true&notes=${payload}`,
+        ).pipe(
+          pluck('response'),
+          mergeMap(issue =>
+            of(
+              followUpMarkedAction(issue),
+              loadAllIssuesAction()
+            )
+          ),
           catchError(error => handleError(error, type))
         )
       )
@@ -134,10 +163,8 @@ const claimIssueEpic = (action$, state$) =>
   action$.pipe(
     ofType(CLAIM_ISSUE),
     flatMap(({payload, type}) =>
-      ajax.patch(
-        `${process.env.REACT_APP_API_URL}/issues/${payload}`,
-        { claimed: true, assigned_to: state$.value.currentUser.id },
-        responseConfig
+      ajax.post(
+				`${baseUrl}tier2/issues/${payload}/claim?async=true`,
       ).pipe(
         pluck('response'),
         mergeMap(issue =>
@@ -155,15 +182,34 @@ const assignIssueEpic = action$ =>
   action$.pipe(
     ofType(ASSIGN_ISSUE),
     switchMap(({payload, assignTo, type}) =>
-      ajax.patch(
-        `${process.env.REACT_APP_API_URL}/issues/${payload}`,
-        { claimed: !(assignTo === 0), assigned_to: assignTo },
+      ajax.post(
+        `${baseUrl}tier2/issues/${payload}/assign/${assignTo}?async=true`,
         responseConfig
       ).pipe(
         pluck('response'),
         mergeMap(issue =>
           of(
             issueAssignedAction(issue),
+            loadAllIssuesAction()
+          )
+        ),
+        catchError(error => handleError(error, type))
+      )
+    )
+  )
+
+const unassignIssueEpic = action$ =>
+  action$.pipe(
+    ofType(UNASSIGN_ISSUE),
+    switchMap(({payload, type}) =>
+      ajax.post(
+        `${baseUrl}tier2/issues/${payload}/unassign?async=true`,
+        responseConfig
+      ).pipe(
+        pluck('response'),
+        mergeMap(issue =>
+          of(
+            issueUnassignedAction(issue),
             loadAllIssuesAction()
           )
         ),
@@ -184,7 +230,7 @@ const clearMessagesEpic = (action$, state$) =>
             mergeMap(message =>
               ajax.post(
                 process.env.REACT_APP_SLACK_URL,
-                bugMessage(message.text.name, message.actionSource, state$.value.currentUser.name),
+                bugMessage(message.text.name, message.actionSource, state$.value.currentUser.FullName),
               ).pipe(
                 map(() => messageClearedAction(message)),
                 catchError(error => handleError(error, type))
@@ -199,18 +245,18 @@ const clearMessagesEpic = (action$, state$) =>
 const changeStatusEpic = (action$, state$) =>
   action$.pipe(
     ofType(CHANGE_STATUS),
-    debounceTime(500),
+    debounceTime(debounceInterval),
     switchMap(({payload, type}) =>
-      ajax.patch(
-        `${process.env.REACT_APP_API_URL}/users/${state$.value.currentUser.id}`,
-        { status: payload },
+      ajax.post(
+        `${baseUrl}employees/${state$.value.currentUser.ID}/status/${payload}?async=true`,
         responseConfig
       ).pipe(
         pluck('response'),
         mergeMap(() =>
           of(
             statusChangedAction(),
-            loadUsersAction()
+						loginRequestAction(),
+						loadUsersAction()
           )
         ),
         catchError(error => handleError(error, type))
@@ -223,7 +269,9 @@ export const rootEpic = combineEpics(loginRequestEpic,
                                      loadIssuesEpic,
                                      loadUsersEpic,
                                      resolveIssueEpic,
+																		 markFollowUpEpic,
                                      claimIssueEpic,
                                      assignIssueEpic,
+																		 unassignIssueEpic,
                                      clearMessagesEpic,
                                      changeStatusEpic)

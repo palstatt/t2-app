@@ -1,9 +1,10 @@
 import React, { Component, Fragment } from 'react'
-import { IssuesQueue } from './pages'
+import { connect } from 'react-redux'
+import { IssuesQueue, FollowUp } from './pages'
 import { MenuBar, Scrim } from './components'
 import { PoseGroup } from 'react-pose'
 
-export default class App extends Component {
+class App extends Component {
 
   state = {
     showMenu: false,
@@ -13,6 +14,18 @@ export default class App extends Component {
     this.setState(({showMenu}) => ({
       showMenu: !showMenu
     }))
+  }
+
+  showPage = () => {
+    const { currentPage } = this.props
+    switch(currentPage) {
+      case 'issuesQueue':
+        return <IssuesQueue showMenu={this.toggleMenu}/>
+      case 'followUp':
+        return <FollowUp showMenu={this.toggleMenu}/>
+      default:
+        return <IssuesQueue showMenu={this.toggleMenu}/>
+    }
   }
 
   render() {
@@ -29,8 +42,16 @@ export default class App extends Component {
             </Scrim>
           }
         </PoseGroup>
-        <IssuesQueue showMenu={this.toggleMenu}/>
+        {this.showPage()}
       </Fragment>
     )
   }
 }
+
+const mapStateToProps = state => {
+  return {
+    currentPage: state.currentPage
+  }
+}
+
+export default connect(mapStateToProps)(App)

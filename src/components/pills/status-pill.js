@@ -70,11 +70,11 @@ export default class StatusPill extends Component {
   }
 
   render() {
-    const { status, changeStatus } = this.props
-    const theme = this.getTheme(status)
+    const { status, statusId, changeStatus } = this.props
+    const theme = this.getTheme(statusId)
     return (
       <ThemeProvider theme={theme}>
-        <Container onClick={() => changeStatus(status)}>
+        <Container onClick={() => changeStatus(statusId)}>
           <StatusText>{status.toUpperCase()}</StatusText>
           <CheckIcon />
         </Container>

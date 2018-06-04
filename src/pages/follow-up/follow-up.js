@@ -3,11 +3,17 @@ import { connect } from 'react-redux';
 import React, { Component, Fragment } from 'react';
 import moment from 'moment';
 import styled, { keyframes } from 'styled-components';
-import { PoseGroup } from 'react-pose'
-import { Header, ClaimedCard, UnclaimedCard, ErrorMessage, StatusCard, Scrim } from '../../components';
+import { PoseGroup } from 'react-pose';
+import {
+  Header,
+  ClaimedCard,
+  ErrorMessage,
+  StatusCard,
+  Scrim
+} from '../../components';
 import { formatDate } from '../../functions'
 import {
-  loadAllIssuesAction,
+  loadFollowUpIssuesAction,
   loadUsersAction,
   loginRequestAction
 } from '../../actions';
@@ -15,14 +21,9 @@ import {
 const navigationOptions = (values = [0, 0]) => (
   [
     {
-      name: 'unclaimed',
+      name: 'follow-up',
       id: 1,
 			childComponent: <Badge theme={values[0] > 0 ? 'warning' : 'complete'} value={values[0]} small/>
-    },
-    {
-      name: 'claimed',
-      id: 2,
-      childComponent: <Badge theme={values[1] > 0 ? 'warning' : 'complete'} value={values[1]} small/>
     },
   ]
 )
@@ -42,37 +43,21 @@ const CardContainer = styled.div`
   }
 `
 
-const CardCollection = ({ unclaimedIssues, claimedIssues, page, handleExpand }) => (
+const CardCollection = ({ followUpIssues, page, handleExpand }) => (
   <CardContainer>
-    {page === 'unclaimed'
-      ?
-      unclaimedIssues.map(issue =>
-        <UnclaimedCard
-          key={issue.ID}
-          id={issue.ID}
-          issue={issue.Issue}
-          author={issue.Employee ? issue.Employee.name : 'N/A'}
-          companyName={issue.Company ? issue.Company.name : 'N/A'}
-          timeCreated={Math.floor(formatDate(issue.DateCreated)/1000)}
-          version={issue.FishbowlVersion}
-          onExpand={() => handleExpand(issue.ID)}
-        />
-      )
-      :
-      claimedIssues.map(issue =>
-        <ClaimedCard
-          key={issue.ID}
-          id={issue.ID}
-          assignedTo={issue.Tier2Tech ? issue.Tier2Tech.id : 1}
-          issue={issue.Issue}
-          author={issue.Employee ? issue.Employee.name : 'N/A'}
-          companyName={issue.Company ? issue.Company.name : 'N/A'}
-          timeCreated={Math.floor(formatDate(issue.DateCreated)/1000)}
-          version={issue.FishbowlVersion}
-          onExpand={() => handleExpand(issue.ID)}
-        />
-      )
-    }
+    {followUpIssues.map(issue =>
+      <ClaimedCard
+        key={issue.ID}
+        id={issue.ID}
+        assignedTo={issue.Tier2Tech ? issue.Tier2Tech.id : 1}
+        issue={issue.Issue}
+        author={issue.Employee ? issue.Employee.name : 'N/A'}
+        companyName={issue.Company ? issue.Company.name : 'N/A'}
+        timeCreated={Math.floor(formatDate(issue.DateCreated)/1000)}
+        version={issue.FishbowlVersion}
+        onExpand={() => handleExpand(issue.ID)}
+      />
+    )}
   </CardContainer>
 )
 
@@ -118,7 +103,6 @@ class IssuesQueue extends Component {
 
   state = {
     focusedCard: null,
-    page: 'unclaimed',
     showStatusCard: false,
   }
 
@@ -135,7 +119,6 @@ class IssuesQueue extends Component {
   }
 
   handleLoadIssues = (pageName) => {
-    this.setState({page: pageName})
     this.props.loadAllIssues()
   }
 
@@ -144,9 +127,9 @@ class IssuesQueue extends Component {
 	}
 
   render() {
-    const { unclaimedIssues, claimedIssues, loading, lastLoaded, messages, showMenu } = this.props
-    const { page, showStatusCard } = this.state
-    const values = [ unclaimedIssues.length, claimedIssues.length ]
+    const { followUpIssues, loading, lastLoaded, messages, showMenu } = this.props
+    const { showStatusCard } = this.state
+    const values = [ followUpIssues.length ]
     return (
       <Fragment>
         <Header
@@ -160,9 +143,7 @@ class IssuesQueue extends Component {
                                />}
         />
         <CardCollection
-          unclaimedIssues={unclaimedIssues}
-          claimedIssues={claimedIssues}
-          page={page}
+          followUpIssues={followUpIssues}
           handleExpand={this.handleExpand}
         />
 
@@ -170,7 +151,7 @@ class IssuesQueue extends Component {
 					?
 						<ErrorMessage />
 					:
-						<LoadedTimeContainer onClick={() => this.handleLoadIssues(page)}>
+						<LoadedTimeContainer onClick={() => this.handleLoadIssues()}>
 							<LoadingSpinner loading={loading}/>
 							{loading ?
 									<Accent><b>Loading...</b></Accent>
@@ -193,8 +174,7 @@ class IssuesQueue extends Component {
 
 const mapStateToProps = state => {
   return {
-    unclaimedIssues: state.unclaimedIssues,
-    claimedIssues: state.claimedIssues,
+    followUpIssues: state.followUpIssues,
     loading: state.loading,
     lastLoaded: state.lastLoaded,
     messages: state.messages
@@ -204,7 +184,7 @@ const mapStateToProps = state => {
 const mapDispatch = dispatch => {
   return {
     loginRequest: (id) => dispatch(loginRequestAction(id)),
-    loadAllIssues: () => dispatch(loadAllIssuesAction()),
+    loadAllIssues: () => dispatch(loadFollowUpIssuesAction()),
     loadUsers: () => dispatch(loadUsersAction()),
   }
 }

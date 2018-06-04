@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { ComplexButton, Badge, MaterialIcon, colors } from 'is-ui-library'
 import { connect } from 'react-redux'
-import { getColor } from '../../functions'
+import { getColor, getStatusName } from '../../functions'
 
 const themeCreator = fg => (
   {
@@ -41,22 +41,19 @@ const AvailableTechsBadge = ({availableCount}) => (
 class Header extends Component {
 
   state = {
-
+		allowMenu: true,
   }
 
   static propTypes = {
-    currentStatus: PropTypes.string,
-    availableCount: PropTypes.number,
     navigationComponent: PropTypes.element,
-  }
-
-  static defaultProps = {
-    currentStatus: 'available',
   }
 
   createTheme = () => {
     const { currentUser } = this.props
-    return themeCreator(getColor(currentUser.status))
+		if (currentUser.EmployeeStatus) {
+				return themeCreator(getColor(currentUser.EmployeeStatus.id))
+		}
+		return themeCreator(getColor())
   }
 
   render() {
@@ -65,13 +62,13 @@ class Header extends Component {
     return (
       <HeaderContainer>
         <TopContainer>
-          <MaterialIcon large onClick={() => showMenu()}>menu</MaterialIcon>
+					{this.state.allowMenu && <MaterialIcon large onClick={() => showMenu()}>menu</MaterialIcon>}
           <ComplexButton
             onClick={() => handleButtonClick()}
             customTheme={theme}
-            label={currentUser.status || 'loading'}
+            label={currentUser.EmployeeStatus ? getStatusName(currentUser.EmployeeStatus.id) : 'loading'}
             childComponent={<AvailableTechsBadge
-                              availableCount={users.filter(user => user.status === 'available').length}
+                              availableCount={users.length > 0 ? users.filter(user => user.statusId === 5).length : 0}
                             />}
           />
         </TopContainer>

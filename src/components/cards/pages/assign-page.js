@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import styled from 'styled-components'
 import AnimateHeight from 'react-animate-height'
 import PropTypes from 'prop-types'
-import { H3, H2, MaterialIcon } from 'is-ui-library'
+import { H3, H2 } from 'is-ui-library'
 import { TechPill } from '../..'
 
 const PillCollection = styled.div`
@@ -12,7 +12,7 @@ const PillCollection = styled.div`
 `
 
 const AnimateHeightStyled = styled(AnimateHeight)`
-  margin-bottom: 16px;
+  margin: 8px 0 16px 0;
 `
 
 const ReassignedContainer = styled.div`
@@ -47,7 +47,7 @@ export default class AssignPage extends Component {
   }
 
   render() {
-    const { id, label, userCollection, handleAction, unassignButton, reassigned, handleReassign, reassignTo } = this.props
+    const { id, label, userCollection, handleAssign, handleUnassign, unassignButton, reassigned, handleReassign, reassignTo } = this.props
     const { rendered } = this.state
     return (
       <AnimateHeightStyled
@@ -59,23 +59,25 @@ export default class AssignPage extends Component {
           <Fragment>
             <H3 center>{label.toUpperCase()}</H3>
             <PillCollection>
-              {userCollection.map(user =>
-                <TechPill
-                  key={user.id}
-                  status={user.status}
-                  avatarURL={user.image_url}
+							{userCollection.map(user =>
+								<TechPill
+									key={user.techId}
+									status={user.status}
+									statusId={user.statusId}
+									avatarURL={user.imageUrl}
+									userName={user.name}
                   onClick={handleReassign
                             ?
-                              () => handleReassign(user.name, id, user.id)
+                              () => handleReassign(user.name, id, user.techId)
                             :
-                              () => handleAction('right', 'assigned', 'attention', id, user.id)}
+                              () => handleAssign('right', 'assigned', 'attention', id, user.techId)}
                 />
               )}
               {unassignButton &&
                 <TechPill
                   border
                   status={'unassign'}
-                  onClick={() => handleAction('left', 'unassigned', 'warning', id, 0)}
+                  onClick={() => handleUnassign('left', 'unassigned', 'warning', id)}
                 />}
               </PillCollection>
           </Fragment>

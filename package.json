@@ -4,16 +4,17 @@
   "private": true,
   "dependencies": {
     "is-ui-library": "file:.yalc/is-ui-library",
-    "moment": "^2.22.1",
-    "react": "^16.3.2",
-    "react-dom": "^16.3.2",
+    "moment": "^2.22.2",
+    "react": "^16.4.0",
+    "react-dom": "^16.4.0",
     "react-redux": "^5.0.7",
     "react-scripts": "1.1.4",
     "redux": "^4.0.0",
-    "redux-observable": "^1.0.0-alpha.2",
-    "rxjs": "^6.1.0",
-    "rxjs-compat": "^6.1.0",
-    "styled-components": "^3.2.6"
+    "redux-devtools-extension": "^2.13.2",
+    "redux-observable": "^1.0.0-beta.0",
+    "rxjs": "^6.2.0",
+    "rxjs-compat": "^6.2.0",
+    "styled-components": "^3.3.2"
   },
   "scripts": {
     "start": "react-scripts start",

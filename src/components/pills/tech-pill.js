@@ -4,7 +4,7 @@ import { H4, MaterialIcon, colors } from 'is-ui-library'
 import { getColor } from '../../functions'
 
 const PillContainer = styled.div`
-  background: ${props => getColor(props.status) || colors.white};
+  background: ${props => getColor(props.statusId) || colors.white};
   border: ${props => props.border ? `2px solid ${colors.black}` : ''};
   height: 40px;
   display: flex;
@@ -24,6 +24,7 @@ const Avatar = styled.img`
   width: 40px;
   border-radius: 40px;
   object-fit: cover;
+	overflow: hidden;
 `
 
 const IconContainer = styled.div`
@@ -47,13 +48,13 @@ export default class TechPill extends Component {
   }
 
   render() {
-    const { avatarURL, status, border, ...props } = this.props
+    const { avatarURL, userName, status, statusId, border, ...props } = this.props
     return (
-      <PillContainer status={status} border={border} {...props} >
+				<PillContainer status={status} statusId={statusId} border={border} {...props} >
         <TechStatusContainer>
           {avatarURL
             ?
-              <Avatar src={avatarURL} />
+              <Avatar src={avatarURL} alt={userName} />
             :
               <IconContainer>
                 <MaterialIcon large>close</MaterialIcon>
