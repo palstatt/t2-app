@@ -133,13 +133,6 @@ const InitFooter = ({ timeCreated, version, notes, id, resolveIssue, markFollowU
       <IconButton
         noLabel
         mobile
-        icon="snooze"
-        secondary
-        onClick={() => markFollowUp(id, notes)}
-      />
-      <IconButton
-        noLabel
-        mobile
         icon="check"
         onClick={() => resolveIssue(notes, id)}
       />
@@ -165,7 +158,7 @@ const ResolveFooter = ({ timeCreated, version, onPageChange }) => (
   </FooterContainer>
 )
 
-class ClaimedCard extends Component {
+class FollowUpCard extends Component {
 
   state = {
     expanded: false,
@@ -262,6 +255,11 @@ class ClaimedCard extends Component {
 		this.setState({notes})
 	}
 
+  componentDidMount() {
+    const { previousNotes } = this.props
+    this.setState({notes: previousNotes ? previousNotes : ''})
+  }
+
   render() {
     const {
       id,
@@ -272,6 +270,7 @@ class ClaimedCard extends Component {
       timeCreated,
       version,
       users,
+      previousNotes,
       assignedTo,
 			assignIssue,
 			unassignIssue,
@@ -340,7 +339,6 @@ class ClaimedCard extends Component {
 						timeCreated={moment.unix(timeCreated).fromNow()}
 						version={version}
 						notes={notes}
-						markFollowUp={(...params) => this.handleAction('right', 'follow up', 'attention', assignIssue, ...params)}
             resolveIssue={(...params) => this.handleAction('right', 'resolved', 'complete', resolveIssue, ...params)}
           />
           ,
@@ -371,4 +369,4 @@ const mapDispatch = dispatch => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatch)(ClaimedCard)
+export default connect(mapStateToProps, mapDispatch)(FollowUpCard)

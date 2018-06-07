@@ -116,6 +116,7 @@ export const followUpIssuesLoadedAction = (issues) => (
   {
     type: FOLLOW_UP_ISSUES_LOADED,
     payload: issues,
+    loadedAt: Date.now(),
   }
 )
 

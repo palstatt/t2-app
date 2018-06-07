@@ -12,33 +12,36 @@ import {
   concatMap,
 } from 'rxjs/operators';
 import { of, from } from 'rxjs';
+
 import {
   ASSIGN_ISSUE,
   CHANGE_STATUS,
   CLAIM_ISSUE,
   CLEAR_MESSAGES,
   LOAD_ALL_ISSUES,
+  LOAD_FOLLOW_UP_ISSUES,
   LOAD_ISSUES,
   LOAD_USERS,
   LOGIN_REQUEST,
-	RESOLVE_ISSUE,
-	UNASSIGN_ISSUE,
-	MARK_FOLLOW_UP,
-	allIssuesLoadedAction,
-	loginRequestAction,
+  MARK_FOLLOW_UP,
+  RESOLVE_ISSUE,
+  UNASSIGN_ISSUE,
+  allIssuesLoadedAction,
   errorQueryAction,
+  followUpIssuesLoadedAction,
+  followUpMarkedAction,
   issueAssignedAction,
   issueClaimedAction,
   issueResolvedAction,
+  issueUnassignedAction,
   issuesLoadedAction,
   loadAllIssuesAction,
   loadUsersAction,
   loginFulfilledAction,
+  loginRequestAction,
   messageClearedAction,
   statusChangedAction,
-	usersLoadedAction,
-	issueUnassignedAction,
-	followUpMarkedAction
+  usersLoadedAction
 } from '../actions';
 import { bugMessage } from '../api';
 
@@ -66,7 +69,7 @@ const loginRequestEpic = action$ =>
         url: `${baseUrl}employees/current`,
         ...requestConfig
       }).pipe(
-		pluck('response'),
+	      pluck('response'),
         map(user => loginFulfilledAction(user)),
         catchError(error => handleError(error, type))
       )
@@ -82,7 +85,7 @@ const loadAllIssuesEpic = action$ =>
 			url: `${baseUrl}tier2/issues/current`,
         ...requestConfig
       }).pipe(
-		pluck('response'),
+        pluck('response'),
         map(issues => allIssuesLoadedAction(issues)),
         catchError(error => handleError(error, type))
       )
@@ -99,12 +102,28 @@ const loadIssuesEpic = action$ =>
         ...requestConfig
       }).pipe(
         pluck('response'),
-		pluck('data'),
+	      pluck('data'),
         map(issues => issuesLoadedAction(issues, collectionName)),
         catchError(error => handleError(error, type))
       )
     )
   )
+
+  const loadFollowUpIssuesEpic = action$ =>
+    action$.pipe(
+  		ofType(LOAD_FOLLOW_UP_ISSUES),
+  		debounceTime(debounceInterval),
+      switchMap(({payload, type}) =>
+        ajax({
+  			url: `${baseUrl}tier2/issues/needsfollowup`,
+          ...requestConfig
+        }).pipe(
+      		pluck('response'),
+          map(issues => followUpIssuesLoadedAction(issues)),
+          catchError(error => handleError(error, type))
+        )
+      )
+    )
 
 const loadUsersEpic = action$ =>
   action$.pipe(
@@ -266,6 +285,7 @@ const changeStatusEpic = (action$, state$) =>
 
 export const rootEpic = combineEpics(loginRequestEpic,
                                      loadAllIssuesEpic,
+                                     loadFollowUpIssuesEpic,
                                      loadIssuesEpic,
                                      loadUsersEpic,
                                      resolveIssueEpic,

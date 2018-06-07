@@ -6,7 +6,7 @@ import styled, { keyframes } from 'styled-components';
 import { PoseGroup } from 'react-pose';
 import {
   Header,
-  ClaimedCard,
+  FollowUpCard,
   ErrorMessage,
   StatusCard,
   Scrim
@@ -18,12 +18,21 @@ import {
   loginRequestAction
 } from '../../actions';
 
+const BadgeContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 8px;
+`
+
 const navigationOptions = (values = [0, 0]) => (
   [
     {
       name: 'follow-up',
       id: 1,
-			childComponent: <Badge theme={values[0] > 0 ? 'warning' : 'complete'} value={values[0]} small/>
+			childComponent: <BadgeContainer>
+                        <Badge theme={'attention'} value={values[0]} small/>
+                      </BadgeContainer>
     },
   ]
 )
@@ -46,9 +55,10 @@ const CardContainer = styled.div`
 const CardCollection = ({ followUpIssues, page, handleExpand }) => (
   <CardContainer>
     {followUpIssues.map(issue =>
-      <ClaimedCard
+      <FollowUpCard
         key={issue.ID}
         id={issue.ID}
+        previousNotes={issue.Tier2Notes}
         assignedTo={issue.Tier2Tech ? issue.Tier2Tech.id : 1}
         issue={issue.Issue}
         author={issue.Employee ? issue.Employee.name : 'N/A'}
@@ -163,7 +173,7 @@ class IssuesQueue extends Component {
         <PoseGroup>
           {showStatusCard &&
 						<Scrim key={2}>
-							<StatusCard onRemove={() => setTimeout(this.handleCloseStatusCard, 500)} key={1} />
+							<StatusCard onRemove={this.handleCloseStatusCard} key={1} />
             </Scrim>
           }
         </PoseGroup>

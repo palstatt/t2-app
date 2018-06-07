@@ -152,5 +152,108 @@
     "LegalName": null,
     "DOB": null,
     "Cell": null
-  }
+  },
+  "followup": [{
+    "ID": 35128,
+    "DateCreated": "\/Date(1527796436057)\/",
+    "Employee": {
+      "id": 64,
+      "_self": "/api/Employees/64",
+      "name": "Chade Miller"
+    },
+    "Issue": "test 1",
+    "IssueStatus": {
+      "id": 4,
+      "_self": "/api/Tier2/Issues/Statuses/4",
+      "name": "Needs Follow Up"
+    },
+    "Tier2Tech": {
+      "id": 40,
+      "_self": "/api/Employees/40",
+      "name": "Neil Jensen"
+    },
+    "Tier2Notes": null,
+    "DateLastModified": "\/Date(1527802277080)\/",
+    "UserLastModified": "cmiller",
+    "Company": {
+      "id": 22892,
+      "_self": "/api/companies/22892",
+      "name": "475 High Performance Building Supply"
+    },
+    "FishbowlVersion": "17.10",
+    "Bug": null,
+    "Team": {
+      "id": 12,
+      "_self": "/api/Teams/12",
+      "name": "Tier 2"
+    }
+  }, {
+    "ID": 35129,
+    "DateCreated": "\/Date(1527796478673)\/",
+    "Employee": {
+      "id": 64,
+      "_self": "/api/Employees/64",
+      "name": "Chade Miller"
+    },
+    "Issue": "test 2",
+    "IssueStatus": {
+      "id": 4,
+      "_self": "/api/Tier2/Issues/Statuses/4",
+      "name": "Needs Follow Up"
+    },
+    "Tier2Tech": {
+      "id": 64,
+      "_self": "/api/Employees/64",
+      "name": "Chade Miller"
+    },
+    "Tier2Notes": null,
+    "DateLastModified": "\/Date(1527802438987)\/",
+    "UserLastModified": "cmiller",
+    "Company": {
+      "id": 21338,
+      "_self": "/api/companies/21338",
+      "name": "3D Robotics Inc."
+    },
+    "FishbowlVersion": "18.5",
+    "Bug": null,
+    "Team": {
+      "id": 12,
+      "_self": "/api/Teams/12",
+      "name": "Tier 2"
+    }
+  }, {
+    "ID": 35130,
+    "DateCreated": "\/Date(1527796512947)\/",
+    "Employee": {
+      "id": 64,
+      "_self": "/api/Employees/64",
+      "name": "Chade Miller"
+    },
+    "Issue": "test 3",
+    "IssueStatus": {
+      "id": 4,
+      "_self": "/api/Tier2/Issues/Statuses/4",
+      "name": "Needs Follow Up"
+    },
+    "Tier2Tech": {
+      "id": 142,
+      "_self": "/api/Employees/142",
+      "name": "Jostin Flake"
+    },
+    "Tier2Notes": "needs follow up",
+    "DateLastModified": "\/Date(1527802616673)\/",
+    "UserLastModified": "cmiller",
+    "Company": {
+      "id": 6124,
+      "_self": "/api/companies/6124",
+      "name": "3VR FB"
+    },
+    "FishbowlVersion": "17.5",
+    "Bug": null,
+    "Team": {
+      "id": 12,
+      "_self": "/api/Teams/12",
+      "name": "Tier 2"
+    }
+  }]
 }

@@ -12,17 +12,28 @@ import {
   loginRequestAction
 } from '../../actions';
 
+const BadgeContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 8px;
+`
+
 const navigationOptions = (values = [0, 0]) => (
   [
     {
       name: 'unclaimed',
       id: 1,
-			childComponent: <Badge theme={values[0] > 0 ? 'warning' : 'complete'} value={values[0]} small/>
+			childComponent: <BadgeContainer>
+                        <Badge theme={values[0] > 0 ? 'warning' : 'complete'} value={values[0]} small/>
+                      </BadgeContainer>
     },
     {
       name: 'claimed',
       id: 2,
-      childComponent: <Badge theme={values[1] > 0 ? 'warning' : 'complete'} value={values[1]} small/>
+      childComponent: <BadgeContainer>
+                        <Badge theme={values[1] > 0 ? 'warning' : 'complete'} value={values[1]} small/>
+                      </BadgeContainer>
     },
   ]
 )
@@ -182,7 +193,7 @@ class IssuesQueue extends Component {
         <PoseGroup>
           {showStatusCard &&
 						<Scrim key={2}>
-							<StatusCard onRemove={() => setTimeout(this.handleCloseStatusCard, 500)} key={1} />
+							<StatusCard onRemove={this.handleCloseStatusCard} key={1} />
             </Scrim>
           }
         </PoseGroup>

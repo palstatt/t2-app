@@ -98,7 +98,8 @@ export default function issuesReducer(state = initialState, action) {
       return {
         ...state,
         loading: false,
-        followUpIssues: [...state.followUpIssues, action.payload],
+        followUpIssues: action.payload,
+        lastLoaded: action.loadedAt,
       }
     case RESOLVE_ISSUE:
       return {
