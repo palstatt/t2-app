@@ -2,11 +2,11 @@ import styled from 'styled-components'
 import posed from 'react-pose'
 
 const scrimProps = {
-  enter: { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
-  exit: { backgroundColor: 'rgba(0, 0, 0, 0) '}
+    enter: { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+    exit: { backgroundColor: 'rgba(0, 0, 0, 0) ' }
 }
 
-const Scrim = styled(posed.div(scrimProps))`
+const Scrim = styled(posed.div(scrimProps)) `
   position: fixed;
   top: 0;
   bottom: 0;

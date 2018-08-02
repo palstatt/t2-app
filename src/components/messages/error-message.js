@@ -39,9 +39,7 @@ const WarningIcon = styled(MaterialIcon).attrs({
 `
 
 class ErrorMessage extends Component {
-
   state = {
-
   }
 
   render() {

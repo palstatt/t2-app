@@ -152,7 +152,6 @@ const ResolveFooter = ({ timeCreated, version, onPageChange }) => (
 )
 
 class UnclaimedCard extends Component {
-
   state = {
     expanded: false,
     currentPage: 0,

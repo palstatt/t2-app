@@ -24,7 +24,6 @@ const ReassignedContainer = styled.div`
 `
 
 export default class AssignPage extends Component {
-
   state = {
     rendered: false,
   }

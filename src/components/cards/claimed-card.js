@@ -122,7 +122,6 @@ const Header = ({
   </HeaderContainer>
 )
 
-
 const InitFooter = ({ timeCreated, version, notes, id, resolveIssue, markFollowUp }) => (
   <FooterContainer>
     <FlexBox vertical centerJustify leftAlign>
@@ -166,7 +165,6 @@ const ResolveFooter = ({ timeCreated, version, onPageChange }) => (
 )
 
 class ClaimedCard extends Component {
-
   state = {
     expanded: false,
     currentPage: 0,
@@ -290,8 +288,8 @@ class ClaimedCard extends Component {
       reassignTo,
       reassigned
       } = this.state
-    const assignedTech = users.find(user => user.techId === Number(assignedTo))
-    const filteredUsers = users.filter(user => user.techId !== assignedTech.techId)
+		const assignedTech = users.find(user => user.techId === Number(assignedTo))
+		const filteredUsers = assignedTech ? users.filter(user => user.techId !== assignedTech.techId && user.statusId !== 6) : users
     return (
       <FlexibleCard
         inline
@@ -308,8 +306,8 @@ class ClaimedCard extends Component {
               expanded={expanded}
               issue={issue}
               supportTechAvatar={assignedTech ? assignedTech.imageUrl : ''}
-							supportTechName={assignedTech ? assignedTech.name : ''}
-              userStatus={assignedTech ? assignedTech.status : 1}
+							supportTechName={assignedTech ? assignedTech.name : 'Not Tier 2 Tech'}
+              userStatus={assignedTech ? assignedTech.statusId : 1}
               author={author}
               companyName={companyName}
               onPageChange={(page) => this.handlePageChange(page)}

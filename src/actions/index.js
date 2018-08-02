@@ -68,7 +68,6 @@ export const errorQueryAction = (error, action) => (
   }
 )
 
-
 export const issuesLoadedAction = (issues, collectionName) => (
   {
     type: ISSUES_LOADED,

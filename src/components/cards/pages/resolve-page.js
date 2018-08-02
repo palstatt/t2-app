@@ -15,7 +15,6 @@ const FlexBox = styled.div`
 `
 
 export default class ResolvePage extends Component {
-
   state = {
     rendered: true,
   }

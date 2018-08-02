@@ -122,7 +122,6 @@ const Header = ({
   </HeaderContainer>
 )
 
-
 const InitFooter = ({ timeCreated, version, notes, id, resolveIssue, markFollowUp }) => (
   <FooterContainer>
     <FlexBox vertical centerJustify leftAlign>
@@ -159,7 +158,6 @@ const ResolveFooter = ({ timeCreated, version, onPageChange }) => (
 )
 
 class FollowUpCard extends Component {
-
   state = {
     expanded: false,
     currentPage: 0,
@@ -290,8 +288,8 @@ class FollowUpCard extends Component {
       reassigned
       } = this.state
     const assignedTech = users.find(user => user.techId === Number(assignedTo))
-    const filteredUsers = users.filter(user => user.techId !== assignedTech.techId)
-    return (
+		const filteredUsers = assignedTech ? users.filter(user => user.techId !== assignedTech.techId) : users
+		return (
       <FlexibleCard
         inline
         bodyPageID={currentPage}
@@ -308,7 +306,7 @@ class FollowUpCard extends Component {
               issue={issue}
               supportTechAvatar={assignedTech ? assignedTech.imageUrl : ''}
 							supportTechName={assignedTech ? assignedTech.name : ''}
-              userStatus={assignedTech ? assignedTech.status : 1}
+              userStatus={assignedTech ? assignedTech.statusId : 1}
               author={author}
               companyName={companyName}
               onPageChange={(page) => this.handlePageChange(page)}

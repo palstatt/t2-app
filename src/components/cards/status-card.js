@@ -18,10 +18,11 @@ const Container = styled(posed.div(containerProps))`
   align-self: stretch;
   position: fixed;
   width: calc(100% - 16px);
-  bottom: -88px;
+  top: 56px;
   left: 8px;
   border-radius: 8px 8px 0 0;
   z-index: 500;
+	height: calc(100% - 56px);
 `
 
 const ClickContainer = styled.div`
@@ -29,14 +30,20 @@ const ClickContainer = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 24px 8px 96px 8px;
+  padding: 24px 8px 24px 8px;
+	margin-bottom: 56px;
 `
 
 const HeaderText = styled(P)`
   color: ${colors.grey};
   margin-bottom: 16px;
+`
+
+const OptionsContainer = styled.div`
+	overflow-y: scroll;
+	align-self: stretch;
 `
 
 const optionPoseProps = {
@@ -51,11 +58,11 @@ const OptionPoseContainer = styled(posed.div(optionPoseProps))`
 class StatusCard extends Component {
 
   componentDidMount() {
-    document.addEventListener('mousedown', this.handleClickOutside)
+    document.addEventListener('touchstart', this.handleClickOutside)
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousedown', this.handleClickOutside)
+    document.removeEventListener('touchstart', this.handleClickOutside)
   }
 
   handleClickOutside = (e) => {
@@ -69,22 +76,24 @@ class StatusCard extends Component {
     return (
       <Container>
         <ClickContainer innerRef={wrapperRef => this.wrapperRef = wrapperRef}>
-          <HeaderText>I'm currently...</HeaderText>
-          <PoseGroup>
-            {statuses.map(({name, id}) =>
-              <OptionPoseContainer key={name}>
-                <StatusPill
-									active={id === currentUser.EmployeeStatus.id}
-									status={name}
-									statusId={id}
-                  changeStatus={(id) => {
-										changeStatus(id)
-										onRemove()
-                  }}
-                />
-              </OptionPoseContainer>
-            )}
-          </PoseGroup>
+					<HeaderText>I'm currently...</HeaderText>
+					<OptionsContainer>
+						<PoseGroup>
+							{statuses.map(({name, id}) =>
+								<OptionPoseContainer key={name}>
+									<StatusPill
+										active={currentUser.EmployeeStatus ? id === currentUser.EmployeeStatus.id : false}
+										status={name}
+										statusId={id}
+										changeStatus={(id) => {
+											changeStatus(id)
+											onRemove()
+										}}
+									/>
+								</OptionPoseContainer>
+							)}
+						</PoseGroup>
+					</OptionsContainer>
         </ClickContainer>
       </Container>
     )

@@ -36,33 +36,31 @@ const IconContainer = styled.div`
   border-radius: 40px;
 `
 
-const TechStatus = styled(H4)`
+const TechStatus = styled(H4) `
   margin-left: 8px;
   line-height: normal;
 `
 
 export default class TechPill extends Component {
+    state = {
+    }
 
-  state = {
-
-  }
-
-  render() {
-    const { avatarURL, userName, status, statusId, border, ...props } = this.props
-    return (
-				<PillContainer status={status} statusId={statusId} border={border} {...props} >
-        <TechStatusContainer>
-          {avatarURL
-            ?
-              <Avatar src={avatarURL} alt={userName} />
-            :
-              <IconContainer>
-                <MaterialIcon large>close</MaterialIcon>
-              </IconContainer>
-          }
-          <TechStatus>{status.toUpperCase()}</TechStatus>
-        </TechStatusContainer>
-      </PillContainer>
-    )
-  }
+    render() {
+        const { avatarURL, userName, status, statusId, border, ...props } = this.props
+        return (
+            <PillContainer status={status} statusId={statusId} border={border} {...props} >
+                <TechStatusContainer>
+                    {avatarURL
+                        ?
+                        <Avatar src={avatarURL} alt={userName} />
+                        :
+                        <IconContainer>
+                            <MaterialIcon large>close</MaterialIcon>
+                        </IconContainer>
+                    }
+                    <TechStatus>{status.toUpperCase()}</TechStatus>
+                </TechStatusContainer>
+            </PillContainer>
+        )
+    }
 }

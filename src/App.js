@@ -3,9 +3,9 @@ import { connect } from 'react-redux'
 import { IssuesQueue, FollowUp } from './pages'
 import { MenuBar, Scrim } from './components'
 import { PoseGroup } from 'react-pose'
+import FeedbackButton from './feedback-button'
 
 class App extends Component {
-
   state = {
     showMenu: false,
   }
@@ -42,7 +42,8 @@ class App extends Component {
             </Scrim>
           }
         </PoseGroup>
-        {this.showPage()}
+				{this.showPage()}
+				<FeedbackButton />
       </Fragment>
     )
   }

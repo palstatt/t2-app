@@ -19,8 +19,8 @@ const store = createStore(reducer, composeEnhancers(applyMiddleware(epicMiddlewa
 epicMiddleware.run(rootEpic)
 
 ReactDOM.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
-  document.getElementById('root'));
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root'));
 registerServiceWorker();

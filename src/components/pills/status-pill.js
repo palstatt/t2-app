@@ -5,16 +5,16 @@ import { getColor } from '../../functions'
 import { MaterialIcon, H2, colors } from 'is-ui-library'
 
 const themes = bg => ({
-  active: {
-    bg,
-    check: colors.black,
-    fg: colors.black,
-  },
-  default: {
-    bg: 'transparent',
-    check: 'transparent',
-    fg: colors.black
-  }
+    active: {
+        bg,
+        check: colors.black,
+        fg: colors.black,
+    },
+    default: {
+        bg: 'transparent',
+        check: 'transparent',
+        fg: colors.black
+    }
 })
 
 const Container = styled.div`
@@ -33,52 +33,51 @@ const Container = styled.div`
   }
 `
 
-const StatusText = styled(H2)`
+const StatusText = styled(H2) `
   color: ${props => props.theme.fg};
   line-height: normal;
 `
 
 const CheckIcon = styled(MaterialIcon).attrs({
-  children: 'check',
-  large: true,
-})`
+    children: 'check',
+    large: true,
+}) `
   color: ${props => props.theme.check};
 `
 
 export default class StatusPill extends Component {
-
-  static propTypes = {
-    active: PropTypes.bool,
-  }
-
-  static defaultProps = {
-    status: 'available',
-    active: false
-  }
-
-  getTheme = status => {
-    const { active } = this.props
-    const themeList = themes(getColor(status))
-    switch(active) {
-      case true:
-        return themeList.active
-      case false:
-        return themeList.default
-      default:
-        return themeList.default
+    static propTypes = {
+        active: PropTypes.bool,
     }
-  }
 
-  render() {
-    const { status, statusId, changeStatus } = this.props
-    const theme = this.getTheme(statusId)
-    return (
-      <ThemeProvider theme={theme}>
-        <Container onClick={() => changeStatus(statusId)}>
-          <StatusText>{status.toUpperCase()}</StatusText>
-          <CheckIcon />
-        </Container>
-      </ThemeProvider>
-    )
-  }
+    static defaultProps = {
+        status: 'available',
+        active: false
+    }
+
+    getTheme = status => {
+        const { active } = this.props
+        const themeList = themes(getColor(status))
+        switch (active) {
+            case true:
+                return themeList.active
+            case false:
+                return themeList.default
+            default:
+                return themeList.default
+        }
+    }
+
+    render() {
+        const { status, statusId, changeStatus } = this.props
+        const theme = this.getTheme(statusId)
+        return (
+            <ThemeProvider theme={theme}>
+                <Container onClick={() => changeStatus(statusId)}>
+                    <StatusText>{status.toUpperCase()}</StatusText>
+                    <CheckIcon />
+                </Container>
+            </ThemeProvider>
+        )
+    }
 }

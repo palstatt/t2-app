@@ -8,6 +8,10 @@
 		name: 'working on issue',
 	},
 	{
+		id: 8,
+		name: 'working at desk',
+	},
+	{
 		id: 16,
 		name: 'mountain pacific',
 	},
@@ -54,7 +58,7 @@
 ]
 
 const getStatusName = (id) => (
-	statuses.find(status => status.id === id).name
+    statuses.find(status => status.id === id).name
 )
 
 export default getStatusName

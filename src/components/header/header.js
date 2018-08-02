@@ -39,7 +39,6 @@ const AvailableTechsBadge = ({availableCount}) => (
 )
 
 class Header extends Component {
-
   state = {
 		allowMenu: true,
   }
